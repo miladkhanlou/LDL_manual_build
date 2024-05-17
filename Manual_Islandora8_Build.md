@@ -188,7 +188,7 @@ scratch_3.sh contents:
 >Alias /drupal "/opt/drupal/islandora-starter-site/web"
 >DocumentRoot "/opt/drupal/islandora-starter-site/web"
 ><Directory /opt/drupal/islandora-starter-site>
->``
+>```
 
 #### 2. Edit 000-default.conf:
 >```
@@ -299,7 +299,7 @@ scratch_5.sh (if the tomcat tarball link is different you must change the path i
 >sudo systemctl enable tomcat
 >sudo systemctl status tomcat
 >```
-
+- ***NOTE: Setenv fixed and updated***
 ## Cantatloupe:
 - ***Install Cantaloupe 5.0.6***
 if Cantaloupe version changes, change the version number
@@ -313,26 +313,26 @@ sudo cp cantaloupe-5.0.6/cantaloupe.properties.sample /opt/cantaloupe_config/can
 sudo cp cantaloupe-5.0.6/delegates.rb.sample /opt/cantaloupe_config/delegates.rb
 
 - ***Copy cantaloupe service syetem directory, check the version of your cantaloup in cantaloupe.service***
->``
+>```
 >sudo cp /mnt/hgfs/shared/cantaloupe.service /etc/systemd/system/cantaloupe.service
 >sudo chmod 755 /etc/systemd/system/cantaloupe.service
->``
+>```
 - ***Enable Cantaloupe***
->``
+>```
 >sudo systemctl enable cantaloupe
 >sudo systemctl start cantaloupe
 >sudo systemctl daemon-reload
->``
+>```
 - ***Configure Cantaloupe URL***
->``
+>```
 >sudo nano /opt/cantaloupe_config/cantaloupe.properties
 >base_uri = http://127.0.0.1:8182/iiif/2
->``
+>```
 - ***Restart and Check the status***
->``
+>```
 sudo systemctl restart cantaloupe
 sudo systemctl status cantaloupe
->``
+>```
 
 ### Installing fedora
 - ***stop tomcat and create fcrepo directy***
@@ -353,53 +353,78 @@ sudo -u postgres psql
 
 - ***Adding fedora configurations:***
 - ```sudo sh /mnt/hgfs/shared/fedora-config.sh```
-- ***NOTE: fedora-config.sh updated! fcrepo.properties was not configured, there are undefined values!***
+- ***NOTE: fedora-config.sh updated! fcrepo.properties was not added and configured, there are undefined values!***
 
 fedora-config.sh contains:
 
 >```
->sudo cp /mnt/hgfs/shared/i8_namespace.cnd /opt/fcrepo/config/i8_namespace.cnd
->sudo chown tomcat:tomcat /opt/fcrepo/config/i8_namespace.cnd
->sudo chmod 644 /opt/fcrepo/config/i8_namespace.cnd
->sudo touch /opt/fcrepo/config/allowed_hosts.txt
->sudo chown tomcat:tomcat /opt/fcrepo/config/allowed_hosts.txt
->sudo chmod 644 /opt/fcrepo/config/allowed_hosts.txt
->sudo -u tomcat echo "http://localhost:80/" >> /opt/fcrepo/config/allowed_hosts.txt
->sudo cp /mnt/hgfs/shared/repository.json /opt/fcrepo/config/
+#!/bin/bash
+>sudo cp /mnt/hgfs/shared/conf/fedora/i8_namespaces.yml /opt/fcrepo/config/
+>sudo chown tomcat:tomcat /opt/fcrepo/config/i8_namespaces.yml
+>sudo chmod 644 /opt/fcrepo/config/i8_namespaces.yml
+
+>sudo cp /mnt/hgfs/shared/conf/fedora/allowed_external_hosts.txt /opt/fcrepo/config/
+>sudo chown tomcat:tomcat /opt/fcrepo/config/allowed_external_hosts.txt
+>sudo chmod 644 /opt/fcrepo/config/allowed_external_hosts.txt
+
+>sudo cp /mnt/hgfs/shared/conf/fedora/fcrepo.properties /opt/fcrepo/config/
+>sudo chown tomcat:tomcat /opt/fcrepo/config/fcrepo.properties
+>sudo chmod 640 /opt/fcrepo/config/fcrepo.properties
+
+>sudo cp /mnt/hgfs/shared/repository.json /opt/fcrepo/config/repository.json
 >sudo chown tomcat:tomcat /opt/fcrepo/config/repository.json
 >sudo chmod 644 /opt/fcrepo/config/repository.json
->sudo cp /mnt/hgfs/shared/fcrepo-config.xml /opt/fcrepo/config/
->sudo chmod 644 /opt/fcrepo/config/fcrepo-config.xml
->sudo chown tomcat:tomcat /opt/fcrepo/config/fcrepo-config.xml
->sudo cp /mnt/hgfs/shared/tomcat-users.xml /opt/tomcat/conf/tomcat-users.xml
->sudo chmod 600 /opt/tomcat/conf/tomcat-users.xml
->sudo chown tomcat:tomcat /opt/tomcat/conf/tomcat-users.xml
+
+#fcrepo.properties(Recently added)
+>sudo cp /mnt/hgfs/shared/conf/fedora/fcrepo.properties /opt/fcrepo/config/ 
+>sudo chown tomcat:tomcat /opt/fcrepo/config/fcrepo.properties
+>sudo chmod 644 /opt/fcrepo/config/fcrepo.properties 
 >```
 
 double check /opt/fcrepo/config/allowed_hosts.txt got created
-
 - ```cat /opt/fcrepo/config/allowed_hosts.txt```
-
-copy setenv.sh from /mnt/hgfs/shared/ to /opt/tomcat/bin/
-
-- ```sudo cp /mnt/hgfs/shared/setenv.sh /opt/tomcat/bin/```
-
+- ***NOTE: Setenv fixed and updated***
+- ***Adding the Fedora Variables to JAVA_OPTS, change setenv:***
 - ```sudo nano /opt/tomcat/bin/setenv.sh```
 
 uncomment line 5, comment line 4 (CTL-c) shows line number
 save (CTL-o) exit (CTL+x)
 
-
 - ```sudo chown tomcat:tomcat /opt/tomcat/bin/setenv.sh```
 
+- ***Edit and Ensuring Tomcat Users Are In Place***
+- Add following to xml after version="1.0" in <tomcat-users>:
+``sudo nano /opt/tomcat/conf/tomcat-users.xml``
+>```
+>  <role rolename="tomcat"/>
+>  <role rolename="fedoraAdmin"/>
+>  <role rolename="fedoraUser"/>
+>  <user username="tomcat" password="TOMCAT_PASSWORD" roles="tomcat"/>
+>  <user username="fedoraAdmin" password="FEDORA_ADMIN_PASSWORD" roles="fedoraAdmin"/>
+>  <user username="fedoraUser" password="FEDORA_USER_PASSWORD" roles="fedoraUser"/>
+>```
+- ***tomcat users permissions:***
+>```
+>sudo chmod 600 /opt/tomcat/conf/tomcat-users.xml
+>sudo chown tomcat:tomcat /opt/tomcat/conf/tomcat-users.xml
+>```
 
-### Downloading fedora
+>### downloade fedora Latest Release:
+```sh /mnt/hgfs/shared/fedora-dl.sh```
+The following shell script will execute the commands below
+>```
+>sudo wget -O fcrepo.war https://github.com/fcrepo/fcrepo/releases/download/fcrepo-6.4.1/fcrepo-webapp-6.4.1.war
+>sudo wget -O fcrepo.war https://github.com/fcrepo/fcrepo/releases/download/fcrepo-6.5.0/fcrepo-webapp-6.5.0.war
+>sudo mv fcrepo.war /opt/tomcat/webapps
+>sudo chown tomcat:tomcat /opt/tomcat/webapps/fcrepo.war
+>sudo systemctl restart tomcat
+>```
 
 you may want to check
 visit: https://github.com/fcrepo/fcrepo/releases choose the latest version and ajust the commands below if needed
 
 - run this command:
-- ```sh /mnt/hgfs/shared/fedora-dl.sh```
+
 >```
 >#!/bin/bash
 >sudo wget -O fcrepo.war https://github.com/fcrepo/fcrepo/releases/download/fcrepo-6.4.0/fcrepo-webapp-6.4.0.war
