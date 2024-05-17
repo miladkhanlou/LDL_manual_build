@@ -1,16 +1,3 @@
-# Describes adapted build using shared folders and scripts to manually build islandora.
-
-**Notes**
-
-This build is adapted from [official islandora documentation](https://islandora.github.io/documentation/installation/manual/introduction/) reading it is encouraged.
-- check download links for new versions of software components.
-- in the shared folder many confFig files and scripts are included to automate repeated steps. 
-- enable shared folders in the virtual machine settings use the LSU Ondrive "shared folders"
-- formatted code in this document is intended to be executed in the command line of the viIsrtual machine IE:
-- `whoami`
-- document assumes familiarity with CLI, file edititing and permissions
-- Download vmware, and an [ubuntu server 22.04 image](https://ubuntu.com/download/server).
-
 **Pre-BUILD Requirements**
 
 - download vmware
@@ -20,7 +7,7 @@ This build is adapted from [official islandora documentation](https://islandora.
 
 - create a vmware machine 
 - choose ubuntu server 22.04 iso 
-- 20 GB on one file for disk size 
+- 100 GB on one file for disk size 
 - the vm must have network access (right click the vm, go to settings>network adapter, select "Bridged", then save)
 - go through the os installation process
 - set your username and password
@@ -77,25 +64,20 @@ the above command runs a script containing the following:
 >sudo apt update
 >``` 
  
-- execute in the vmware cli after shared folders are connected:
+## Install php and postgresql:
 - ```sh /mnt/hgfs/shared/scratch_2.sh```
 the above command runs the following script the :
 >```
 >#!/bin/bash
->sudo apt -y install php8.1 php8.1-cli php8.1-common php8.1-curl php8.1-dev php8.1-gd php8.1-imap php8.1-mbstring php8.1-opcache php8.1-xml php8.1-yaml php8.1-zip libapache2-mod-php8.1 php-pgsql php-redis php-xdebug unzip
->sudo a2enmod php8.1
+>sudo apt -y install php8.3 php8.3-cli php8.3-common php8.3-curl php8.3-dev php8.3-gd php8.3-imap php8.3-mbstring php8.3-opcache php8.3-xml php8.3-yaml php8.3-zip libapache2-mod-php8.3 php-pgsql php-redis php-xdebug unzip
+>sudo a2enmod php8.3
 >sudo systemctl restart apache2
 ># set default php to the version we have insalled:
->sudo update-alternatives --set php /usr/bin/php8.1
-># Create the file repository configuration for postgres:
->sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-># Import the repository signing key for postgres:
->wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
->sudo apt-get update
->sudo apt-get install -y postgresql
->sudo systemctl status postgresql
->sudo systemctl restart postgresql
->sudo systemctl restart apache2
+>sudo update-alternatives --set php /usr/bin/php8.3
+>#install Postgresql
+>sudo apt install -y postgresql-common
+>sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+>sudo apt install -y postgresql-15
 >```
 
 Edit the postgresql.conf file starting at line 687
@@ -111,11 +93,44 @@ change to
 >```
 >bytea_output = 'escape'
 >```
-
--when using nano you press (CTL+o) to save (CTL+x) to close
-
 - ```sudo systemctl restart postgresql```
 
+## Setting Up PostgreSQL Database and User for Drupal 10:
+***create up a drupal10 database and user***
+
+- ```sudo -u postgres psql```
+
+#from within the postgres cli change to drupal10:
+>```
+>create database drupal10 encoding 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0;
+>create user drupal with encrypted password 'drupal';
+>/q
+>>```
+
+***Grant privileges, Enable extension,Modify database setting***
+- ```sudo -u postgres psql```
+>/c drupal10
+>GRANT ALL PRIVILEGES ON DATABASE drupal10 TO drupal;
+>GRANT CREATE ON SCHEMA public TO drupal;
+>CREATE EXTENSION pg_trgm;
+>\q
+
+- ***Modify database setting***
+- >```
+>ALTER DATABASE drupal10;
+>SET bytea_output = 'escape';
+>\q
+>```
+- ```sudo systemctl restart postgresql```
+- ***Editing pg_hba.conf for User Authentication in PostgreSQL***
+>cp /mnt/hgfs/shared/pg_hba.conf /etc/postgresql/15/main/
+- Adds the following authentication settings for PostgreSQL users and databases on localhost. Note: Do not copy the configurations below into the pg_hba.conf file, as the indentations are incorrect.
+>```
+># Database administrative login by Unix domain socket
+>local   all             postgres                                peer
+>local	  all		           all			                                  md5
+>#TYPE  DATABASE         USER            ADDRESS                 METHOD
+>```
 ## Install Composer
 
 - ```sh /mnt/hgfs/shared/scratch_3.sh```
@@ -133,209 +148,202 @@ scratch_3.sh contents:
 >sudo chown -R www-data:www-data /var/www/
 >```
 
-## Add the islandora-starter-site project
 
-- `cd /opt/drupal`
-- `sudo -u www-data composer create-project islandora/islandora-starter-site:1.5.0`
-- ```cd /opt/drupal/islandora-starter-site```
-
-## Install and symlink Drush
-  
-- ```sudo -u www-data composer require drush/drush```
-- ```sudo ln -s /opt/drupal/islandora-starter-site/vendor/bin/drush /usr/local/bin/drush```
-
-confirm link:
-
-- ```ls -lart /usr/local/bin/drush```
-
-Expected output will link to /home/wwc/drupal-project/vendor/bin/drush
-
-# copy and configure apache conf files:
-
+## Configure apache server settings:
 - ```sudo cp /mnt/hgfs/shared/ports.conf /etc/apache2/ports.conf```
+- ***Apache virtual host configuration***
+- We edit the default virtual host configuration file located in /etc/apache2/sites-available/ and /etc/apache2/sites-enabled/.
 - ```sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-enabled/000-default.conf```
+- - ```sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-available/000-default.conf```
+- Copy command above edits the default virtual host configuration file located in /etc/apache2/sites-available/ and /etc/apache2/sites-enabled/.
 >```
 ><VirtualHost *:80>
->  ServerName localhost
->  DocumentRoot "/opt/drupal/islandora-starter-site/web"
->  <Directory "/opt/drupal/islandora-starter-site/web">
->    Options Indexes FollowSymLinks MultiViews
->    AllowOverride all
->    Require all granted
->  </Directory>
->  # Ensure some logging is in place.
->  ErrorLog "/var/log/apache2/localhost_error.log"
->  CustomLog "/var/log/apache2/localhost_access.log" combined
+> ServerName localhost
+> DocumentRoot "/opt/drupal/islandora-starter-site/web"
+> <Directory "/opt/drupal/islandora-starter-site/web">
+>   Options Indexes FollowSymLinks MultiViews
+>   AllowOverride all
+>   Require all granted
+> </Directory>
+> # Ensure some logging is in place.
+> ErrorLog "/var/log/apache2/localhost_error.log"
+> CustomLog "/var/log/apache2/localhost_access.log" combined
 ></VirtualHost>
 >```
-
-put the following the drupal.conf and 000-default.conf in sites-available directory.
-You can comment out or delete everything in the file:
+>
+***Now We create a Drupal virtual host configuration file using***
 - ```sudo nano /etc/apache2/sites-available/drupal.conf```
 >```
->Alias /drupal "/opt/drupal/islandora-starter-site/web"
->DocumentRoot "/opt/drupal/islandora-starter-site/web"
-><Directory /opt/drupal/islandora-starter-site>
+>Alias /drupal "/opt/drupal"
+>DocumentRoot "/opt/drupal"
+><Directory /opt/drupal>
 >    AllowOverride All
 >    Require all granted
 ></Directory>
 >```
-- ```sudo nano /etc/apache2/sites-available/000-default.conf```
+- ***Later in the installation steps, when we create an Islandora Starter Site project, we need to edit the root directory in the Apache configuration files as shown below:***
+
+#### 1. Edit drupal.conf:
 >```
 >Alias /drupal "/opt/drupal/islandora-starter-site/web"
 >DocumentRoot "/opt/drupal/islandora-starter-site/web"
 ><Directory /opt/drupal/islandora-starter-site>
->    AllowOverride All
->    Require all granted
-></Directory>
+>``
+
+#### 2. Edit 000-default.conf:
 >```
-Then run:
+> DocumentRoot "/opt/drupal/islandora-starter-site/web"
+> <Directory "/opt/drupal/islandora-starter-site/web">
+>```
+
+#### Configuring and Securing Apache for Drupal Deployment
 - ```sudo systemctl restart apache2``` 
 - ```sudo a2ensite drupal```
 - ```sudo a2enmod rewrite```
 - ```sudo systemctl restart apache2```
-- ```sudo chown -R www-data:www-data /opt/drupal/islandora-starter-site/web```
-- ```sudo chmod -R 755 /opt/drupal/islandora-starter-site/web```
+- ```sudo chown -R www-data:www-data /opt/drupal```
+- ```sudo chmod -R 755 /opt/drupal```
 
-***create a database***
 
-- ```sudo -u postgres psql```
-
-#from within the postgres cli change to drupal10:
+#### Add PDO extentions for postgresql and mysql:
+>sh /mnt/hgfs/shared/PDO-extensions.sh
+The following shell script will execute the commands below:
 >```
->create database drupal10 encoding 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0;
->create user drupal with encrypted password 'drupal';
->grant all privileges on database drupal10 to drupal;
+>sudo apt-get install php8.3-mysql
+>sudo apt-get install php8.3-pgsql
+>#For mariaDB
+>sudo apt-get install php8.3-mysqli
+>sudo add-apt-repository ppa:ondrej/php
+>sudo add-apt-repository ppa:ondrej/apache2
+>sudo apt update
+>sudo systemctl restart apache2
 >```
-
-type ```\q``` to quit
-
-For DRUPAL 10:
-
-- ```sudo -u postgres psql```
-- from within the postgres cli:
->```
->\c drupal10
->CREATE EXTENSION pg_trgm;
->\q
->```
-### Add PDO extentions for postgresql and mysql:
-look for pdo_mysql.ini file. 
-- ```cd /etc/php/8.1/apache2/conf.d```
-if it doesn't exixt, run the PDO-extensions.sh to install the extensions for postgresql and mysql:
-- ```sh /mnt/hgfs/shared/PDO-extensions.sh```
-
-### Configure postgresql authentication:
-copy the file bellow to postgresql directory to add the User and Database authentication:
-- ```cp /mnt/hgfs/shared/pg_hba.conf /etc/postgresql/14/main/```
 
 ### Make sure postgresql and apache2 are both active:
 - ```sudo systemctl restart postgresql apache2```
 - ```sudo systemctl status postgresql apache2```
 
-### install a drupal site
 
-- Needed to change
-
-- ```sudo -u postgres psql```
-- from within the postgres cli:
+## install tomcat and cantaloupe
+### Install JAVA 
+***Install JAVA 17.0.1 manualy***
+- ***Create directory for Java installation:***
 >```
->ALTER DATABASE drupal10;
->SET bytea_output = 'escape';
->\q
+>sudo mkdir /usr/lib/jvm
+>cd /usr/lib/jvm
+>>```
+- ***Download and extract the Java archive:***
+>```
+>sudo wget -O openjdk-17.0.1.tar.gz https://download.java.net/java/GA/jdk17.0.1/2a2082e5a09d4267845be086888add4f/12/GPL/openjdk-17.0.1_linux-x64_bin.tar.gz
+>sudo tar -zxvf openjdk-17.0.1.tar.gz
+>sudo mv jdk-17.0.1 java-17.0.1-openjdk-amd64
+>```
+- ***Set executable permissions and create a symbolic link:***
+>```
+>sudo chmod +x /usr/lib/jvm/java-17.0.1-openjdk-amd64/bin/java
+>sudo ln -s /usr/lib/jvm/java-17.0.1-openjdk-amd64/bin/java /usr/bin/java
+>```
+- ***Verify the Java installation:***
+>```
+>java --version
+>```
+- ***Configure alternatives to manage different Java versions:***
+>```
+>sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-17.0.1-openjdk-amd64/bin/java 1
+>update-alternatives --list java
+>```
+The output should include a line similar to: "/usr/lib/jvm/java-11-openjdk-amd64/bin/java"
+note this path for later use as JAVA_HOME. it is the same as the path above without "/bin/java". "/usr/lib/jvm/java-11-openjdk-amd64"- ***Add Java_HOME in default environment variables***
+- ***Add JAVA_HOME to Default Environment Variables:***
+>```
+>echo 'export JAVA_HOME=/usr/lib/jvm/java-17.0.1-openjdk-amd64' >> ~/.bashrc
+>echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ~/.bashrc
+>source ~/.bashrc
 >```
 
-- Then reset postgresql
-
-```sudo systemctl restart postgresql```
-
-- Then use one of these site install commands:
-
-```sudo -u www-data drush site-install --existing-config --db-url="pgsql://drupal:drupal@127.0.0.1:5432/drupal10"```
-
-or
-
-```sudo drush -y site-install standard --db-url="pgsql://drupal:drupal@127.0.0.1:5432/drupal10" --site-name="LDL 2.0" --account-name=islandora --account-pass=islandora```
-
-
-### install tomcat and cantaloupe
-
-- ```sudo apt -y install openjdk-11-jdk openjdk-11-jre```
-
-- ```update-alternatives --list java```
-
-The above should output something like "/usr/lib/jvm/java-11-openjdk-amd64/bin/java"
-
-note this path for later use as JAVA_HOME. it is the same as the path above without "/bin/java". "/usr/lib/jvm/java-11-openjdk-amd64"
-
+### Install Tomcat:
+- ***create tomcat user:***
 - ```sudo addgroup tomcat```
 - ```sudo adduser tomcat --ingroup tomcat --home /opt/tomcat --shell /usr/bin```
-
 choose a password
 ie: password: "tomcat"
 press enter for all default user prompts
 type y for yes
 
+- ***install tomcat***
 find the tar.gz here: https://tomcat.apache.org/download-90.cgi
 copy the TOMCAT_TARBALL_LINK as of 09-06-23 it was: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.80/bin/apache-tomcat-9.0.80.tar.gz
 copy the TOMCAT_TARBALL_LINK as of 02-07-24 it was: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz
-
-
 - ```sh /mnt/hgfs/shared/scratch_5.sh```
-
-scratch_5.sh (if the tomcat tarball link is different you must change the path in the script or run the commands in the scratch_5 alt section):
-
+The following shell script will execute the commands below:
 >```
->#!/bin/bash
 >cd /opt
->#O not 0
+>sudo mkdir tomcat
 >sudo wget -O tomcat.tar.gz https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz
 >sudo tar -zxvf tomcat.tar.gz
->#don't miss the star*
 >sudo mv /opt/apache-tomcat-9.0.85/* /opt/tomcat
 >sudo chown -R tomcat:tomcat /opt/tomcat
 >```
-
+scratch_5.sh (if the tomcat tarball link is different you must change the path in the script or run the commands in the scratch_5 alt section):
 
 - ```sh /mnt/hgfs/shared/scratch_6.sh```
 
-scratch_6.sh contents (if Cantaloupe version changes change the version number in this file):
-
+- ***Copy environment variables that includes java home to tomcat/bin***
 >```
+>//Make sure version of openjdk java is correct in JAVA_HOME:
 >sudo cp /mnt/hgfs/shared/setenv.sh /opt/tomcat/bin/
 >sudo chmod 755 /opt/tomcat/bin/setenv.sh
->sudo cp /mnt/hgfs/shared/tomcat.service /etc/systemd/system/tomcat.service 
+>sudo cp /mnt/hgfs/shared/tomcat.service /etc/systemd/system/tomcat.service
 >sudo chmod 755 /etc/systemd/system/tomcat.service
->#check your cantaloupe version 
->sudo wget -O /opt/cantaloupe.zip https://github.com/cantaloupe-project/cantaloupe/releases/download/v5.0.5/cantaloupe-5.0.5.zip
->sudo unzip /opt/cantaloupe.zip
->sudo mkdir /opt/cantaloupe_config
->sudo cp cantaloupe-5.0.5/cantaloupe.properties.sample /opt/cantaloupe_config/cantaloupe.properties
->sudo cp cantaloupe-5.0.5/delegates.rb.sample /opt/cantaloupe_config/delegates.rb
->sudo touch /etc/systemd/system/cantaloupe.service 
->sudo chmod 755 /etc/systemd/system/cantaloupe.service
->sudo cp /mnt/hgfs/shared/cantaloupe.service /etc/systemd/system/cantaloupe.service
->sudo systemctl enable cantaloupe
->sudo systemctl start cantaloupe
+>sudo systemctl start tomcat
+>sudo systemctl enable tomcat
+>sudo systemctl status tomcat
 >```
 
-check that unzip step worked ``` ls /opt/cantaloupe*``` or something...
+## Cantatloupe:
+- ***Install Cantaloupe 5.0.6***
+if Cantaloupe version changes, change the version number
+>```
+>sudo wget -O /opt/cantaloupe.zip https://github.com/cantaloupe-project/cantaloupe/releases/download/v5.0.6/cantaloupe-5.0.6.zip
+>sudo unzip /opt/cantaloupe.zip
+>sudo mkdir /opt/cantaloupe_config
+>```
+- ***copy the configurations into cantaloupe_config***
+sudo cp cantaloupe-5.0.6/cantaloupe.properties.sample /opt/cantaloupe_config/cantaloupe.properties
+sudo cp cantaloupe-5.0.6/delegates.rb.sample /opt/cantaloupe_config/delegates.rb
 
-you may need to reload cantaloupe: 
-
-- ```sudo systemctl daemon-reload```
-
+- ***Copy cantaloupe service syetem directory, check the version of your cantaloup in cantaloupe.service***
+>``
+>sudo cp /mnt/hgfs/shared/cantaloupe.service /etc/systemd/system/cantaloupe.service
+>sudo chmod 755 /etc/systemd/system/cantaloupe.service
+>``
+- ***Enable Cantaloupe***
+>``
+>sudo systemctl enable cantaloupe
+>sudo systemctl start cantaloupe
+>sudo systemctl daemon-reload
+>``
+- ***Configure Cantaloupe URL***
+>``
+>sudo nano /opt/cantaloupe_config/cantaloupe.properties
+>base_uri = http://127.0.0.1:8182/iiif/2
+>``
+- ***Restart and Check the status***
+>``
+sudo systemctl restart cantaloupe
+sudo systemctl status cantaloupe
+>``
 
 ### Installing fedora
-
+- ***stop tomcat and create fcrepo directy***
 - ```sudo systemctl stop tomcat```
 - ```sudo mkdir -p /opt/fcrepo/data/objects```
 - ```sudo mkdir /opt/fcrepo/config```
 - ```sudo chown -R tomcat:tomcat /opt/fcrepo```
 - ```sudo -u postgres psql```
 
-execute these commands within the psql database:
-
+- ***Create fcrepo database, user, password in postgresql or maridb:***
+sudo -u postgres psql
 >```
 >create database fcrepo encoding 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0;
 >create user fedora with encrypted password 'fedora';
@@ -343,7 +351,9 @@ execute these commands within the psql database:
 >\q
 >```
 
+- ***Adding fedora configurations:***
 - ```sudo sh /mnt/hgfs/shared/fedora-config.sh```
+- ***NOTE: fedora-config.sh updated! fcrepo.properties was not configured, there are undefined values!***
 
 fedora-config.sh contains:
 
