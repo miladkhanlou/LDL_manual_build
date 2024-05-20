@@ -404,7 +404,7 @@ Add following to xml after version="1.0" in <tomcat-users>:
 >sudo chown tomcat:tomcat /opt/tomcat/conf/tomcat-users.xml
 >```
 
->### downloade fedora Latest Release:
+#### downloade fedora Latest Release:
 ```sh /mnt/hgfs/shared/fedora-dl.sh```
 The following shell script will execute the commands below
 >```
@@ -427,3 +427,470 @@ visit: https://github.com/fcrepo/fcrepo/releases choose the latest version and a
 >sudo chown tomcat:tomcat /opt/tomcat/webapps/fcrepo.war
 >sudo systemctl restart tomcat
 >```
+
+##
+
+## Syn:
+### Download syn:
+check here for link: https://github.com/Islandora/Syn/releases/ copy the link (if changed from syn-1.1.1) and replace the link in the command below:
+- run the command:
+- ```sh /mnt/hgfs/shared/syn-dl.sh```
+>```
+>#!/bin/bash
+>sudo wget -P /opt/tomcat/lib https://github.com/Islandora/Syn/releases/download/v1.1.1/islandora-syn-1.1.1-all.jar
+>sudo chown -R tomcat:tomcat /opt/tomcat/lib
+>sudo chmod -R 640 /opt/tomcat/lib
+>```
+### Generating an SSL Key for Syn and Placing the Syn Settings:
+- ```sudo sh /mnt/hgfs/shared/syn-config.sh```
+The following shell script will execute the commands below:
+>```
+>#!/bin/bash
+>sudo mkdir /opt/keys
+>sudo openssl genrsa -out "/opt/keys/syn_private.key" 2048
+>sudo openssl rsa -pubout -in "/opt/keys/syn_private.key" -out "/opt/keys/syn_public.key"
+>sudo chown www-data:www-data /opt/keys/syn*
+>sudo mkdir /opt/syn
+>sudo cp /mnt/hgfs/shared/syn-settings.xml /opt/fcrepo/config/
+>sudo chown tomcat:tomcat /opt/fcrepo/config/syn-settings.xml
+>sudo chmod 600 /opt/fcrepo/config/syn-settings.xml
+>```
+### Adding the Syn Valve to Tomcat | Enable the Syn Valve for all of Tomcat:
+- ```sudo nano /opt/tomcat/conf/context.xml
+Add this line before the closing tag:
+>```
+>    <Valve className="ca.islandora.syn.valve.SynValve" pathname="/opt/fcrepo/config/syn-settings.xml"/>
+></Context>
+>```
+- ```sudo systemctl restart tomcat```
+### Redhat logging:
+>``` 
+>sudo cp /mnt/hgfs/shared/conf/fedora/fcrepo-logback.xml /opt/fcrepo/config/
+>sudo chmod 644 /opt/fcrepo/config/fcrepo-logback.xml
+>sudo chown tomcat:tomcat /opt/fcrepo/config/fcrepo-logback.xml
+>```
+>
+- Then alter your $JAVA_OPTS like above to include:
+- ```sudo nano /opt/tomcat/bin/setenv.sh```
+- Comment line 5 and uncomment line 6
+- **Before:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -DconnectionTimeout=-1 -server -Xmx1500m -Xms1000m"
+- **After:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -Dlogback.configurationFile=/opt/fcrepo/config/fcrepo-logback.xml -DconnectionTimeout=-1 -server -Xmx1500m -Xms1000m"
+
+## installing blazegraph
+### Creating a Working Space for Blazegraph and install Blazegraph:
+- ```sh /mnt/hgfs/shared/blazegraph-dl.sh```
+>```
+>sudo mkdir -p /opt/blazegraph/data
+>sudo mkdir /opt/blazegraph/conf
+>sudo chown -R tomcat:tomcat /opt/blazegraph
+>cd /opt
+>sudo wget -O blazegraph.war https://repo1.maven.org/maven2/com/blazegraph/bigdata-war/2.1.5/bigdata-war-2.1.5.war
+>sudo mv blazegraph.war /opt/tomcat/webapps
+>sudo chown tomcat:tomcat /opt/tomcat/webapps/blazegraph.war
+>```
+### Configuring Logging and Adding Blazegraph Configurations:
+- ```sh /mnt/hgfs/shared/blazegraph_conf.sh```
+The following shell script will execute the commands below:
+>```
+>#!/bin/bash
+>#Configuring Logging
+>sudo cp /mnt/hgfs/shared/log4j.properties /opt/blazegraph/conf/
+>sudo chown tomcat:tomcat /opt/blazegraph/conf/log4j.properties
+>sudo chmod 644 /opt/blazegraph/conf/log4j.properties
+>#Adding a Blazegraph Configuration
+>sudo cp /mnt/hgfs/shared/RWStore.properties /opt/blazegraph/conf
+>sudo chown tomcat:tomcat /opt/blazegraph/conf/RWStore.properties
+>sudo chmod 644 /opt/blazegraph/conf/RWStore.properties
+>sudo cp /mnt/hgfs/shared/blazegraph.properties /opt/blazegraph/conf
+>sudo chown tomcat:tomcat /opt/blazegraph/conf/blazegraph.properties
+>sudo chmod 644 /opt/blazegraph/conf/blazegraph.properties
+>sudo cp /mnt/hgfs/shared/inference.nt /opt/blazegraph/conf
+>sudo chown tomcat:tomcat /opt/blazegraph/conf/inference.nt
+>sudo chmod 644 /opt/blazegraph/conf/inference.nt
+>sudo chown -R tomcat:tomcat /opt/blazegraph/conf
+>sudo chmod -R 644 /opt/blazegraph/conf
+>```
+### Specifying the RWStore.properties in JAVA_OPTS:
+- ```sudo nano /opt/tomcat/bin/setenv.sh```
+Comment line 6 and uncomment line 7:
+
+- **Before:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -DconnectionTimeout=-1 -server -Xmx1500m -Xms1000m"
+- **After:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -Dlogback.configurationFile=/opt/fcrepo/config/fcrepo-logback.xml -DconnectionTimeout=-1 Dcom.bigdata.rdf.sail.webapp.ConfigParams.propertyFile=/opt/blazegraph/conf/RWStore.properties -Dlog4j.configuration=file:/opt/blazegraph/conf/log4j.properties -server -Xmx1500m -Xms1000m"
+- sudo systemctl restart tomcat
+### Installing Blazegraph Namespaces and Inference:
+- ```sudo curl -X POST -H "Content-Type: text/plain" --data-binary @/opt/blazegraph/conf/blazegraph.properties http://localhost:8080/blazegraph/namespace```
+- 
+If this worked correctly, Blazegraph should respond with **"CREATED: islandora"** to let us know it created the islandora namespace.
+
+- ```sudo curl -X POST -H "Content-Type: text/plain" --data-binary @/opt/blazegraph/conf/inference.nt http://localhost:8080/blazegraph/namespace/islandora/sparql```
+If this worked correctly, Blazegraph should respond with some XML letting us know it added the 2 entries from inference.nt to the namespace.
+
+## installing solr
+#### Check JAVA_HOME:
+- ```sudo nano ~/.bashrc```
+>```
+>export JAVA_HOME=/usr/lib/jvm/java-17.0.1-openjdk-amd64
+>export PATH=$JAVA_HOME/bin:$PATH
+>```
+- ```source ~/.bashrc```
+
+#### download 9.x solr:
+>cd /opt
+>sudo wget https://www.apache.org/dyn/closer.lua/solr/solr/9.6.0/solr-9.6.0.tgz?action=download```
+>sudo mv solr-9.6.0.tgz?action=download solr-9.6.0.tgz```
+>sudo tar xzf solr-9.6.0.tgz solr-9.6.0/bin/install_solr_service.sh --strip-components=2```
+>```
+#### Install Solr:
+- run following as root to extract and install solr:
+``` sudo bash ./install_solr_service.sh solr-9.6.0.tgz -i /opt -d /var/solr -u solr -s solr -p 8983```
+##### Runnig the above command will do the following:
+- extracted solr-9.6.0 to /opt
+- symlink /opt.solr -> /opt/solr-9.6.0
+- installed /etc/init.d/solr script 
+- installed /etc/default/solr.in.sh
+- service solr installed
+##### to customize solr startup configuration go to this directory /etc/default/solr.in.sh:
+- SOLR_PID_DIR="/var/solr"
+- SOLR_HOME="/var/solr/data"
+- LOG4J_PROPS="/var/solr/log4j2.xml"
+- SOLR_LOGS_DIR="/var/solr/logs"
+- SOLR_PORT="8983"
+  
+#### Adjust Kernel Parameters:
+
+- ```sudo su```
+- ```sudo echo "fs.file-max = 65535" >> /etc/sysctl.conf```
+- ```sudo sysctl -p```
+
+#### Create Solr Core
+
+- ```sudo mkdir -p /var/solr/data/islandora8```
+- ```sudo mkdir -p /var/solr/data/islandora8/conf```
+- ```cp /mnt/shared/solr_9.x_config/* /var/solr/data/islandora10/conf/```
+- ```sudo chown -R solr:solr /var/solr```
+- ```cd /opt/solr```
+- ```sudo -u solr bin/solr create -c islandora10 -p 8983```
+**We will configure index via gui after site installed***
+
+## Crayfish microservices
+#### Adding this PPA to your system:
+- ```sudo add-apt-repository -y ppa:lyrasis/imagemagick-jp2```
+- ```sudo apt-get update```
+- ```sudo apt-get -y install imagemagick tesseract-ocr ffmpeg poppler-utils```
+
+#### Cloning and Installing Crayfish:
+- ```sh /mnt/hgfs/shared/crayfish_reqs.sh```
+
+It's running the following:
+>```
+>cd /opt
+>sudo git clone https://github.com/Islandora/Crayfish.git crayfish```
+>sudo chown -R www-data:www-data crayfish```
+>sudo -u www-data composer install -d crayfish/Homarus
+>sudo -u www-data composer install -d crayfish/Houdini
+>sudo -u www-data composer install -d crayfish/Hypercube
+>sudo -u www-data composer install -d crayfish/Milliner
+>sudo -u www-data composer install -d crayfish/Recast
+>```
+#### Preparing Logging:
+- ```sudo mkdir /var/log/islandora```
+- ```sudo chown www-data:www-data /var/log/islandora```
+
+#### moving config files over:
+- ```sh /mnt/hgfs/shared/conf/Crayfish-confs/microservices-config.sh```
+
+Folowing command will move Crayfish Microservices Config files and Apache Config files over.
+### NEW FILE IN SHARED!
+- ```sudo a2enconf Homarus Houdini Hypercube Milliner Recast```
+- ```sudo systemctl reload apache2```
+
+## ActiveMQ/Alpaca/Karaf/Crayfish:
+### 1. ActiveMQ:
+#### The latest ActiveMQ manual installation:
+>```
+>cd /usr/share/
+>sudo wget https://archive.apache.org/dist/activemq/5.17.6/apache-activemq-5.17.6-bin.zip  => Not Active, NOT JAVA17x
+>sudo wget https://archive.apache.org/dist/activemq/6.1.2/apache-activemq-6.1.2-bin.zip
+>sudo unzip apache-activemq-6.1.2-bin.zip
+>sudo mv apache-activemq-6.1.2 activemq
+>```
+- Create directories:
+>```
+>sudo mkdir -p /var/lib/activemq
+>sudo mkdir -p /var/lib/activemq/conf
+>```
+
+#### Create an ActiveMQ System User and Set Permissions:
+>```
+>cd /usr/share/activemq
+>sudo useradd -r activemq -d /var/lib/activemq -s /sbin/nologin
+>sudo chown -R activemq:activemq /var/lib/activemq
+>sudo chown -R activemq:activemq /usr/share/activemq
+>```
+
+#### Set Up Service:
+- ```sudo cp /mnt/hgfs/shared/activemq.service /etc/systemd/system/activemq.service```
+- reload systemd to recognize the new service ```sudo systemctl daemon-reload```
+
+#### Enable an start Service:
+>```
+>sudo systemctl enable activemq
+>sudo systemctl start activemq
+>sudo systemctl status activemq
+>```
+
+#### Set manual ActiveMQ as default ActiveMQ:
+add activemq bin directory to default environment variable:
+>```
+>sudo ~/.bashrc
+>export PATH=$PATH:/usr/share/activemq/bin
+>source ~/.bashrc
+>```
+
+#### Create a symbolic link For ActiveMQ:
+- ```sudo ln -s /usr/share/activemq/bin/activemq /usr/local/bin/activemq```
+- Check ActiveMQ Version to make sure it is installed and system can find the right service version:
+- ```activemq --version```
+
+#### ActiveMQ ConfigurationL
+ActiveMQ expected to be listening for STOMP messages at a tcp url. If not the default tcp://127.0.0.1:61613, this will have to be set:
+- ```sudo nano /usr/share/activemq/conf/activemq.xml```
+- Inside the <transportConnectors> element, find the configuration for the STOMP transport connector and change the stomp url to 127.0.0.1:61613
+- ```name="stomp" uri="stomp://127.0.0.1:61613"```
+
+### 2. Karaf (karaf is not been used to install latest Alpaca Microservices any more, We will install alpaca Microservices in a another way later)
+
+### 3. Alpaca:
+#### Check Alpaca installation in offial Islandora Github. (https://islandora.github.io/documentation/installation/manual/installing-alpaca/)
+
+## Download and Scaffold Drupal, Create a project using the Islandora Starter Site:
+#### install php-intl 8.3:
+```sudo apt-get install php8.3-intl```
+
+#### create islandora starter site project(Check with dockerized to see if we need latest version maybe?)
+- ```cd /opt/drupal```
+- ```sudo composer create-project islandora/islandora-starter-site:1.8.0```
+- ```cd /opt/drupal/islandora-starter-site```
+
+#### Install drush using composer at islandora-starter-site
+- ```sudo chown -R www-data:www-data /opt/drupal/islandora-starter-site```
+- ```sudo chmod 777 -R /opt/drupal/islandora-starter-site```
+- ```sudo -u www-data composer require drush/drush```
+- ```sudo ln -s /opt/drupal/islandora-starter-site/vendor/bin/drush /usr/local/bin/drush```
+- ```ls -lart /usr/local/bin/drush```
+
+#### Configure Settings.php and add Flysystem's fedora and trusted host:
+```sudo nano web/sites/default/settings.php```
+>```
+>$settings['trusted_host_patterns'] = [
+>  'localhost',
+>  '192.168.253.128',
+>];
+>
+>$settings['flysystem'] = [
+>  'fedora' => [
+>    'driver' => 'fedora',
+>    'config' => [
+>      'root' => 'http://127.0.0.1:8080/fcrepo/rest/',
+>    ],
+>  ],
+>];
+>```
+#### Fix Apache configurations root directories:
+- Fix path in apache **000.default.conf** and drupal.conf to **/opt/drupal/islandora-starter-site/web**, in **site-available** and **site-enabled**:
+#### 1. Edit drupal.conf:
+```sudo nano /etc/apache2/sites-available/drupal.conf```
+
+Bellow is the lines that need to be set to in drupal.conf.
+>```
+>Alias /drupal "/opt/drupal/islandora-starter-site/web"
+>DocumentRoot "/opt/drupal/islandora-starter-site/web"
+><Directory /opt/drupal/islandora-starter-site>
+>```
+
+#### 2. Edit 000-default.conf:
+sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-enabled/000-default.conf
+sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-available/000-default.conf
+Bellow is the lines that need to be set to in 000-default.conf.
+>```
+> DocumentRoot "/opt/drupal/islandora-starter-site/web"
+> <Directory "/opt/drupal/islandora-starter-site/web">
+>```
+
+Then restart apache2 ```sudo systemctl restart apache2```
+
+#### change permission on the web directory:
+- ```sudo chown -R www-data:www-data /opt/drupal/islandora-starter-site/web```
+- ```sudo chmod -R 755 /opt/drupal/islandora-starter-site/web```
+
+#### Again, make sure you have already done followings:
+- You should have granted all privileges to the user Drupal when created the table and databases before site install so that these are all permissions on user to create tables on database.
+- You should have installed PDO extention before site install.
+
+## Install the site using composer or drush:
+- **1. install using Composer:**
+  - ```composer exec -- drush site:install --existing-config```
+ 
+- **2. Install with Drush:**
+  - ```sudo -u www-data drush site-install --existing-config --db-url="pgsql://drupal:drupal@127.0.0.1:5432/drupal10"```
+#### Change default username and password:
+- ```sudo drush upwd admin admin```
+
+## Add (or otherwise create) a user to the fedoraadmin role; for example, giving the default admin user the role:(Optional)
+- **1. Using Composer:**
+- ```cd /opt/drupal/islandora-starter-site```
+- ```composer exec -- drush user:role:add fedoraadmin admin```
+ 
+- **2. Using Drush:**
+- cd /opt/drupal/islandora-starter-site
+sudo -u www-data drush -y urol "fedoraadmin" admin
+
+## Configure the locations of external services(Some already configured in prerequsits)
+#### What already have been configured so far:
+- check if your services like cantaloupe, apache, tomcat, databases are available and working
+- check if you have already configured the cantaloup IIIF base URL to http://127.0.0.1:8182/iiif/2
+- check if you have already configured activemq.xml in name="stomp" uri="tcp://127.0.0.1:61613"
+#### make sure keys are inplace in /opt/keys/syn_private.key
+
+#### solr search_api installation and fiele size:
+- ```sudo -u www-data composer require drupal/search_api_solr```
+
+### Configurations:
+#### 1. Configure Cantaloupe OpenSeaDragon:
+- In GUI:
+  - set location of the cantaloupe iiif endpoint to http://localhost:8182/iiif/2
+- In settings.php:
+  - $settings['openseadragon.settings']['iiif_server'] = 'http://127.0.0.1:8182/iiif/2';
+
+#### Configure Cantaloupe for Islandora IIIF:
+- In GUI:
+  - /admin/config/islandora/iiif
+- In settings.php:
+  - $settings['islandora_iiif.settings']['iiif_server'] = 'http://127.0.0.1:8182/iiif/2';
+
+#### Configure ActiveMQ, islandora message broker sertting url:
+- In GUI:
+  - /admin/config/islandora/core
+  - set brocker URL to tcp://127.0.0.1:61613 
+- In settings.php:
+  - $settings['islandora.settings']['broker_url'] = 'tcp://127.0.0.1:61613';
+- If activeMQ was not active check activemq.service:
+  - sudo netstat -tuln | grep LISTEN
+  - Check if 61613 is active and being listed to
+ 
+#### Configure solr:
+- Check for bellow configuration:
+  - Check solr is availabe at port 8983: sudo netstat -tuln | grep LISTEN
+  - Check solr is running if not run: sudo /opt/solr/bin/start 
+  - Then restart: sudo systemctl restart solr
+  - Check if your solr core is installed!
+- In GUI: Navigate to admin/config/search/search-api edit the existing server or create one:
+  - backend: Solr
+  - Solr Connector: Standard
+  - Solr core: islandora8
+- In settings.php:
+  - Set search_api.server.default_solr_server backend_config.connector_config.host
+    - $settings['search_api.server.default_solr_server']['backend_config']['connector_config']['host'] = '127.0.0.1';
+  - Solr port: Set search_api.server.default_solr_server backend_config.connector_config.port
+    - $settings['search_api.server.default_solr_server']['backend_config']['connector_config']['port'] = '8983';
+  - Solr, core name: Set search_api.server.default_solr_server backend_config.connector_config.core
+    - $settings['search_api.server.default_solr_server']['backend_config']['connector_config']['core'] = 'islandora8';
+#### Check syn/jwt configuration
+#### keys must be available at /opt/keys/syn_private.key
+ - Symlinking the private key to /opt/drupal/keys/private.key
+   - ```sudo ln -s /opt/keys/syn_private.key /usr/local/bin/drush```
+- In GUI:
+  - First, Navigate to /admin/config/system/keys/add
+    - key type: JWT RSA KEy
+    - JWT Algorithm: RSAASA-PKCXS1-v1_5 Using SHA-256(RS256)
+    - Key Provider: file
+    - File location: /opt/keys/syn_private.key
+    - Save
+ - Then, Navigate to /admin/config/system/jwt
+    - Select the key you justy created
+    - Save configuration
+
+## Run the migrations tagged with islandora to populate some taxonomies and Enabling EVA Views:
+#### Run the migrations taged with islandora:
+- ```composer exec -- drush migrate:import --userid=1 --tag=islandora```
+#### Enabling EVA Views:
+- ```drush -y views:enable display_media```
+
+## instrall group modules and dependencies:
+- ```cd /opt/drupal/islandora-starter-site```
+- ```sudo -u www-data composer require digitalutsc/islandora_group```
+- ```sudo -u www-data composer require 'drupal/rules:^3.0@alpha'```
+- ```drush en -y islandora_group gnode```
+#### Rebuild Cache:
+- ```drush cr```
+
+## Group Configuration:
+#### group type:
+set available content and install group media and group media image and all:
+- Navigate to ```configuration -> access controll -> islandora access and select islandora_access```
+
+#### create a group:
+- Navigate to ```structure -> content types -> repository item -> manage fields -> create a access terms -> type is Reference  	-> Reference type: Taxonomy term, Vocabulary: Islandora Access```
+
+#### Media type:
+- Navigate to ```structure -> mediatypes -> edit one of the media types -> edit -> manage fields -> create a field -> create 	a access terms -> type is Reference  -> Reference type = Islandora Access```
+
+#### Media types Access term:
+for each media type we need to have access terms so we re use the one we created
+- Navigate to configuration -> access controll -> islandora access and select islandora_access -> select islandora_access
+
+#### Groups role and group role permissions:
+- Groups must be created with the Administrator role, insider and ousider, and individual user. 
+  - If not, the groups created will not be hidden from the administrator account. 
+- If you find yourself unable to delete a group type due to hidden groups 
+   - Edit the Roles under the group type and creat an Outsider Administrator Role that can see and delete individual groups 
+
+#### Fix the destination for each media type (Important for media ingestion for each media types):
+ -Navigate ```Structure>Media types```
+ -for each media type edit the field that type is file and set Upload destination to the Public files instead of fedora:
+   -Example: for audio: field_media_audio_file
+   -Except image, and specifically, field_media_image that file type is image
+ -Ensure you have set maxiumum file size
+   -we can do it at this point if where we're editing each mediaTypes 
+   -might be doable in settings.php, when we setting flysystem to fedora
+   -might any settings that we define the destination such as apache php.ini
+ -restart apache and tomcat, daemon-reload, cache rebuild
+
+## re-islandora Workbench to be on V1.0.0:
+#### Remove dev version and install V1 cause dev version is not determined by workbench anymore:
+-remove mjordan/islandora_workbench_integration from composer.json and update composer
+
+```composer update```
+
+#### Re-install and enable(Running command bellow will get V1 ) 
+- ```sudo -u www-data composer require mjordan/islandora_workbench_integration```
+- ```drush en -y islandora_workbench_integration```
+- ```drush cr```
+- ```sudo systemctl restart apache2 tomcat postgresql```
+- ```sudo systemctl daemon-reload```
+
+#### enable rest endpoints for workbench then rebuild the cache:
+- ```drush cim -y --partial --source=/opt/drupal/islandora-starter-site/web/modules/contrib/islandora_workbench_integration/config/optional```
+- ```drush cr -y```
+
+#### If you had issue with number of file uploads check apache setting at /etc/php/8.3/apache2/php.ini
+- ```sudo nano /etc/php/8.3/apache2/php.ini```
+- ```max_file_uploads = ???```
+
+## Fix postgresql mimic_implicite error fix after islandora_group, islandora workbench installation:
+mimic_implicite for postgresql error occures while creating new content, After groupmedia module installaion, causes the content not to be created in postgresql database
+
+#### Copy the fixed posql edited phps:
+- ```sudo cp /mnt/hgfs/shared/conf/postgreSQL/pgsql-drivers/core-module-pgsql-src-Driver/Connection.php /opt/drupal/islandora-starter-site/web/core/modules/pgsql/src/Driver/Database/pgsql/```
+- ```sudo cp /mnt/hgfs/shared/conf/postgreSQL/pgsql-drivers/core-module-pgsql-src-Driver/Select.php /opt/drupal/islandora-starter-site/web/core/modules/pgsql/src/Driver/Database/pgsql/```
+- ```drush cr```
+- ```sudo systemctl daemon-reload```
+- ```sudo systemctl restart apache2 postgresql```
+- ```sudo systemctl status apache2 postgresql```
+
+## Configure default Flysystem
+
+## Run workbench ingest:
+- after running our transformation tools, we now run the workbench to ingest our content to the server:
+   - ```cd islandora_workbench```
+   - ./workbench --config LDLingest.yml```
