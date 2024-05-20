@@ -659,77 +659,238 @@ ActiveMQ expected to be listening for STOMP messages at a tcp url. If not the de
 - ```name="stomp" uri="stomp://127.0.0.1:61613"```
 
 ### 2. Karaf (karaf is not been used to install latest Alpaca Microservices any more, We will install alpaca Microservices in a another way later)
->```
->sudo addgroup karaf
->sudo adduser karaf --ingroup karaf --home /opt/karaf --shell /usr/bin
->```
-#### Downloading and Placing Karaf:
->```
->cd /opt
->sudo wget -O karaf.tar.gz https://dlcdn.apache.org/karaf/4.4.6/apache-karaf-4.4.6.tar.gz
->sudo tar -xzvf karaf.tar.gz
->sudo chown -R karaf:karaf apache-karaf-4.4.6
->sudo mv apache-karaf-4.4.6/* /opt/karaf
->```
-
-#### Configuring Karaf Logging:
->```
->sudo mkdir /var/log/karaf
->sudo chown karaf:karaf /var/log/karaf
->sudo cp /mnt/hgfs/shared/org.pos4j.pax.logging.cfg /opt/karaf/etc/org.pos4j.pax.logging.cfg
->sudo chown karaf:karaf /opt/karaf/etc/org.pos4j.pax.logging.cfg
->sudo chmod 644 /opt/karaf/etc/org.pos4j.pax.logging.cfg
->```
-
-#### Creating a setenv.sh Script for Karaf:
-Similar to Tomcat, our Karaf service is going to rely on a setenv shell script to determine environment variables Karaf needs in place when running.
-- ```sudo su```
-- ```sudo echo '#!/bin/sh' >> /opt/karaf/bin/setenv```
-- ```sudo echo 'export JAVA_HOME="/usr/lib/jvm/java-17.0.1-openjdk-amd64"' >> /opt/karaf/bin/setenv```
-- sudo chown karaf:karaf /opt/karaf/bin/setenv
-- sudo chmod 755 /opt/karaf/bin/setenv
-
-#### Initializing Karaf:
-```sudo nano /opt/karaf/etc/users.properties```
->```
-32 | # karaf = karaf,_g_:admingroup
-33 | # _g_\:admingroup = group,admin,manager,viewer,systembundles,ssh
->```
-
-
-#### start karaf:
-- ```sudo -u karaf /opt/karaf/bin/start```
-
-You may want to wait a bit for Karaf to start.
-run these commands to confirm that the process for karaf is running:
-
-- ```ps aux | grep karaf```
-
-#### Feature and Install wrapper:
->```
->sudo /opt/karaf/bin/client feature:install wrapper
->sudo /opt/karaf/bin/client wrapper:install
->sudo /opt/karaf/bin/stop
->```
-
-#### Creating and Starting the Karaf Service:
-sudo systemctl enable /opt/karaf/bin/karaf.service
-sudo systemctl start karaf
-sudo systemctl status karaf
-
-##### If Karaf could not make alias karaf.service as karaf, try following:
->```
->sudo ln -s /opt/karaf/bin/karaf-service /etc/init.d/
->sudo systemctl daemon-reload
->#start the service
->sudo /etc/init.d/karaf-service start
->sudo systemctl enable /opt/karaf/bin/karaf.service
->sudo systemctl daemon-reload
->sudo systemctl start karaf
->sudo systemctl status karaf
->```
 
 ### 3. Alpaca:
 #### Check Alpaca installation in offial Islandora Github. (https://islandora.github.io/documentation/installation/manual/installing-alpaca/)
 
+## Download and Scaffold Drupal, Create a project using the Islandora Starter Site:
+#### install php-intl 8.3:
+```sudo apt-get install php8.3-intl```
 
+#### create islandora starter site project(Check with dockerized to see if we need latest version maybe?)
+- ```cd /opt/drupal```
+- ```sudo composer create-project islandora/islandora-starter-site:1.8.0```
+- ```cd /opt/drupal/islandora-starter-site```
+
+#### Install drush using composer at islandora-starter-site
+- ```sudo chown -R www-data:www-data /opt/drupal/islandora-starter-site```
+- ```sudo chmod 777 -R /opt/drupal/islandora-starter-site```
+- ```sudo -u www-data composer require drush/drush```
+- ```sudo ln -s /opt/drupal/islandora-starter-site/vendor/bin/drush /usr/local/bin/drush```
+- ```ls -lart /usr/local/bin/drush```
+
+#### Configure Settings.php and add Flysystem's fedora and trusted host:
+```sudo nano web/sites/default/settings.php```
+>```
+>$settings['trusted_host_patterns'] = [
+>  'localhost',
+>  '192.168.253.128',
+>];
+>
+>$settings['flysystem'] = [
+>  'fedora' => [
+>    'driver' => 'fedora',
+>    'config' => [
+>      'root' => 'http://127.0.0.1:8080/fcrepo/rest/',
+>    ],
+>  ],
+>];
+>```
+#### Fix Apache configurations root directories:
+- Fix path in apache **000.default.conf** and drupal.conf to **/opt/drupal/islandora-starter-site/web**, in **site-available** and **site-enabled**:
+#### 1. Edit drupal.conf:
+```sudo nano /etc/apache2/sites-available/drupal.conf```
+
+Bellow is the lines that need to be set to in drupal.conf.
+>```
+>Alias /drupal "/opt/drupal/islandora-starter-site/web"
+>DocumentRoot "/opt/drupal/islandora-starter-site/web"
+><Directory /opt/drupal/islandora-starter-site>
+>```
+
+#### 2. Edit 000-default.conf:
+sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-enabled/000-default.conf
+sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-available/000-default.conf
+Bellow is the lines that need to be set to in 000-default.conf.
+>```
+> DocumentRoot "/opt/drupal/islandora-starter-site/web"
+> <Directory "/opt/drupal/islandora-starter-site/web">
+>```
+
+Then restart apache2 ```sudo systemctl restart apache2```
+
+#### change permission on the web directory:
+- ```sudo chown -R www-data:www-data /opt/drupal/islandora-starter-site/web```
+- ```sudo chmod -R 755 /opt/drupal/islandora-starter-site/web```
+
+#### Again, make sure you have already done followings:
+- You should have granted all privileges to the user Drupal when created the table and databases before site install so that these are all permissions on user to create tables on database.
+- You should have installed PDO extention before site install.
+
+## Install the site using composer or drush:
+- **1. install using Composer:**
+  - ```composer exec -- drush site:install --existing-config```
+ 
+- **2. Install with Drush:**
+  - ```sudo -u www-data drush site-install --existing-config --db-url="pgsql://drupal:drupal@127.0.0.1:5432/drupal10"```
+#### Change default username and password:
+- ```sudo drush upwd admin admin```
+
+## Add (or otherwise create) a user to the fedoraadmin role; for example, giving the default admin user the role:(Optional)
+- **1. Using Composer:**
+- ```cd /opt/drupal/islandora-starter-site```
+- ```composer exec -- drush user:role:add fedoraadmin admin```
+ 
+- **2. Using Drush:**
+- cd /opt/drupal/islandora-starter-site
+sudo -u www-data drush -y urol "fedoraadmin" admin
+
+## Configure the locations of external services(Some already configured in prerequsits)
+#### What already have been configured so far:
+- check if your services like cantaloupe, apache, tomcat, databases are available and working
+- check if you have already configured the cantaloup IIIF base URL to http://127.0.0.1:8182/iiif/2
+- check if you have already configured activemq.xml in name="stomp" uri="tcp://127.0.0.1:61613"
+#### make sure keys are inplace in /opt/keys/syn_private.key
+
+#### solr search_api installation and fiele size:
+- ```sudo -u www-data composer require drupal/search_api_solr```
+
+### Configurations:
+#### 1. Configure Cantaloupe OpenSeaDragon:
+- In GUI:
+  - set location of the cantaloupe iiif endpoint to http://localhost:8182/iiif/2
+- In settings.php:
+  - $settings['openseadragon.settings']['iiif_server'] = 'http://127.0.0.1:8182/iiif/2';
+
+#### Configure Cantaloupe for Islandora IIIF:
+- In GUI:
+  - /admin/config/islandora/iiif
+- In settings.php:
+  - $settings['islandora_iiif.settings']['iiif_server'] = 'http://127.0.0.1:8182/iiif/2';
+
+#### Configure ActiveMQ, islandora message broker sertting url:
+- In GUI:
+  - /admin/config/islandora/core
+  - set brocker URL to tcp://127.0.0.1:61613 
+- In settings.php:
+  - $settings['islandora.settings']['broker_url'] = 'tcp://127.0.0.1:61613';
+- If activeMQ was not active check activemq.service:
+  - sudo netstat -tuln | grep LISTEN
+  - Check if 61613 is active and being listed to
+ 
+#### Configure solr:
+- Check for bellow configuration:
+  - Check solr is availabe at port 8983: sudo netstat -tuln | grep LISTEN
+  - Check solr is running if not run: sudo /opt/solr/bin/start 
+  - Then restart: sudo systemctl restart solr
+  - Check if your solr core is installed!
+- In GUI: Navigate to admin/config/search/search-api edit the existing server or create one:
+  - backend: Solr
+  - Solr Connector: Standard
+  - Solr core: islandora8
+- In settings.php:
+  - Set search_api.server.default_solr_server backend_config.connector_config.host
+    - $settings['search_api.server.default_solr_server']['backend_config']['connector_config']['host'] = '127.0.0.1';
+  - Solr port: Set search_api.server.default_solr_server backend_config.connector_config.port
+    - $settings['search_api.server.default_solr_server']['backend_config']['connector_config']['port'] = '8983';
+  - Solr, core name: Set search_api.server.default_solr_server backend_config.connector_config.core
+    - $settings['search_api.server.default_solr_server']['backend_config']['connector_config']['core'] = 'islandora8';
+#### Check syn/jwt configuration
+#### keys must be available at /opt/keys/syn_private.key
+ - Symlinking the private key to /opt/drupal/keys/private.key
+   - ```sudo ln -s /opt/keys/syn_private.key /usr/local/bin/drush```
+- In GUI:
+  - First, Navigate to /admin/config/system/keys/add
+    - key type: JWT RSA KEy
+    - JWT Algorithm: RSAASA-PKCXS1-v1_5 Using SHA-256(RS256)
+    - Key Provider: file
+    - File location: /opt/keys/syn_private.key
+    - Save
+ - Then, Navigate to /admin/config/system/jwt
+    - Select the key you justy created
+    - Save configuration
+
+## Run the migrations tagged with islandora to populate some taxonomies and Enabling EVA Views:
+#### Run the migrations taged with islandora:
+- ```composer exec -- drush migrate:import --userid=1 --tag=islandora```
+#### Enabling EVA Views:
+- ```drush -y views:enable display_media```
+
+## instrall group modules and dependencies:
+- ```cd /opt/drupal/islandora-starter-site```
+- ```sudo -u www-data composer require digitalutsc/islandora_group```
+- ```sudo -u www-data composer require 'drupal/rules:^3.0@alpha'```
+- ```drush en -y islandora_group gnode```
+#### Rebuild Cache:
+- ```drush cr```
+
+## Group Configuration:
+#### group type:
+set available content and install group media and group media image and all:
+- Navigate to ```configuration -> access controll -> islandora access and select islandora_access```
+
+#### create a group:
+- Navigate to ```structure -> content types -> repository item -> manage fields -> create a access terms -> type is Reference  	-> Reference type: Taxonomy term, Vocabulary: Islandora Access```
+
+#### Media type:
+- Navigate to ```structure -> mediatypes -> edit one of the media types -> edit -> manage fields -> create a field -> create 	a access terms -> type is Reference  -> Reference type = Islandora Access```
+
+#### Media types Access term:
+for each media type we need to have access terms so we re use the one we created
+- Navigate to configuration -> access controll -> islandora access and select islandora_access -> select islandora_access
+
+#### Groups role and group role permissions:
+- Groups must be created with the Administrator role, insider and ousider, and individual user. 
+  - If not, the groups created will not be hidden from the administrator account. 
+- If you find yourself unable to delete a group type due to hidden groups 
+   - Edit the Roles under the group type and creat an Outsider Administrator Role that can see and delete individual groups 
+
+#### Fix the destination for each media type (Important for media ingestion for each media types):
+ -Navigate ```Structure>Media types```
+ -for each media type edit the field that type is file and set Upload destination to the Public files instead of fedora:
+   -Example: for audio: field_media_audio_file
+   -Except image, and specifically, field_media_image that file type is image
+ -Ensure you have set maxiumum file size
+   -we can do it at this point if where we're editing each mediaTypes 
+   -might be doable in settings.php, when we setting flysystem to fedora
+   -might any settings that we define the destination such as apache php.ini
+ -restart apache and tomcat, daemon-reload, cache rebuild
+
+## re-islandora Workbench to be on V1.0.0:
+#### Remove dev version and install V1 cause dev version is not determined by workbench anymore:
+-remove mjordan/islandora_workbench_integration from composer.json and update composer
+
+```composer update```
+
+#### Re-install and enable(Running command bellow will get V1 ) 
+- ```sudo -u www-data composer require mjordan/islandora_workbench_integration```
+- ```drush en -y islandora_workbench_integration```
+- ```drush cr```
+- ```sudo systemctl restart apache2 tomcat postgresql```
+- ```sudo systemctl daemon-reload```
+
+#### enable rest endpoints for workbench then rebuild the cache:
+- ```drush cim -y --partial --source=/opt/drupal/islandora-starter-site/web/modules/contrib/islandora_workbench_integration/config/optional```
+- ```drush cr -y```
+
+#### If you had issue with number of file uploads check apache setting at /etc/php/8.3/apache2/php.ini
+- ```sudo nano /etc/php/8.3/apache2/php.ini```
+- ```max_file_uploads = ???```
+
+## Fix postgresql mimic_implicite error fix after islandora_group, islandora workbench installation:
+mimic_implicite for postgresql error occures while creating new content, After groupmedia module installaion, causes the content not to be created in postgresql database
+
+#### Copy the fixed posql edited phps:
+- ```sudo cp /mnt/hgfs/shared/conf/postgreSQL/pgsql-drivers/core-module-pgsql-src-Driver/Connection.php /opt/drupal/islandora-starter-site/web/core/modules/pgsql/src/Driver/Database/pgsql/```
+- ```sudo cp /mnt/hgfs/shared/conf/postgreSQL/pgsql-drivers/core-module-pgsql-src-Driver/Select.php /opt/drupal/islandora-starter-site/web/core/modules/pgsql/src/Driver/Database/pgsql/```
+- ```drush cr```
+- ```sudo systemctl daemon-reload```
+- ```sudo systemctl restart apache2 postgresql```
+- ```sudo systemctl status apache2 postgresql```
+
+## Configure default Flysystem
+
+## Run workbench ingest:
+- after running our transformation tools, we now run the workbench to ingest our content to the server:
+   - ```cd islandora_workbench```
+   - ./workbench --config LDLingest.yml```
