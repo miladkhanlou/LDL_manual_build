@@ -404,7 +404,7 @@ Add following to xml after version="1.0" in <tomcat-users>:
 >sudo chown tomcat:tomcat /opt/tomcat/conf/tomcat-users.xml
 >```
 
->### downloade fedora Latest Release:
+#### downloade fedora Latest Release:
 ```sh /mnt/hgfs/shared/fedora-dl.sh```
 The following shell script will execute the commands below
 >```
@@ -427,3 +427,309 @@ visit: https://github.com/fcrepo/fcrepo/releases choose the latest version and a
 >sudo chown tomcat:tomcat /opt/tomcat/webapps/fcrepo.war
 >sudo systemctl restart tomcat
 >```
+
+##
+
+## Syn:
+### Download syn:
+check here for link: https://github.com/Islandora/Syn/releases/ copy the link (if changed from syn-1.1.1) and replace the link in the command below:
+- run the command:
+- ```sh /mnt/hgfs/shared/syn-dl.sh```
+>```
+>#!/bin/bash
+>sudo wget -P /opt/tomcat/lib https://github.com/Islandora/Syn/releases/download/v1.1.1/islandora-syn-1.1.1-all.jar
+>sudo chown -R tomcat:tomcat /opt/tomcat/lib
+>sudo chmod -R 640 /opt/tomcat/lib
+>```
+### Generating an SSL Key for Syn and Placing the Syn Settings:
+- ```sudo sh /mnt/hgfs/shared/syn-config.sh```
+The following shell script will execute the commands below:
+>```
+>#!/bin/bash
+>sudo mkdir /opt/keys
+>sudo openssl genrsa -out "/opt/keys/syn_private.key" 2048
+>sudo openssl rsa -pubout -in "/opt/keys/syn_private.key" -out "/opt/keys/syn_public.key"
+>sudo chown www-data:www-data /opt/keys/syn*
+>sudo mkdir /opt/syn
+>sudo cp /mnt/hgfs/shared/syn-settings.xml /opt/fcrepo/config/
+>sudo chown tomcat:tomcat /opt/fcrepo/config/syn-settings.xml
+>sudo chmod 600 /opt/fcrepo/config/syn-settings.xml
+>```
+### Adding the Syn Valve to Tomcat | Enable the Syn Valve for all of Tomcat:
+- ```sudo nano /opt/tomcat/conf/context.xml
+Add this line before the closing tag:
+>```
+>    <Valve className="ca.islandora.syn.valve.SynValve" pathname="/opt/fcrepo/config/syn-settings.xml"/>
+></Context>
+>```
+- ```sudo systemctl restart tomcat```
+### Redhat logging:
+>``` 
+>sudo cp /mnt/hgfs/shared/conf/fedora/fcrepo-logback.xml /opt/fcrepo/config/
+>sudo chmod 644 /opt/fcrepo/config/fcrepo-logback.xml
+>sudo chown tomcat:tomcat /opt/fcrepo/config/fcrepo-logback.xml
+>```
+>
+- Then alter your $JAVA_OPTS like above to include:
+- ```sudo nano /opt/tomcat/bin/setenv.sh```
+- Comment line 5 and uncomment line 6
+- **Before:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -DconnectionTimeout=-1 -server -Xmx1500m -Xms1000m"
+- **After:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -Dlogback.configurationFile=/opt/fcrepo/config/fcrepo-logback.xml -DconnectionTimeout=-1 -server -Xmx1500m -Xms1000m"
+
+## installing blazegraph
+### Creating a Working Space for Blazegraph and install Blazegraph:
+- ```sh /mnt/hgfs/shared/blazegraph-dl.sh```
+>```
+>sudo mkdir -p /opt/blazegraph/data
+>sudo mkdir /opt/blazegraph/conf
+>sudo chown -R tomcat:tomcat /opt/blazegraph
+>cd /opt
+>sudo wget -O blazegraph.war https://repo1.maven.org/maven2/com/blazegraph/bigdata-war/2.1.5/bigdata-war-2.1.5.war
+>sudo mv blazegraph.war /opt/tomcat/webapps
+>sudo chown tomcat:tomcat /opt/tomcat/webapps/blazegraph.war
+>```
+### Configuring Logging and Adding Blazegraph Configurations:
+- ```sh /mnt/hgfs/shared/blazegraph_conf.sh```
+The following shell script will execute the commands below:
+>```
+>#!/bin/bash
+>#Configuring Logging
+>sudo cp /mnt/hgfs/shared/log4j.properties /opt/blazegraph/conf/
+>sudo chown tomcat:tomcat /opt/blazegraph/conf/log4j.properties
+>sudo chmod 644 /opt/blazegraph/conf/log4j.properties
+>#Adding a Blazegraph Configuration
+>sudo cp /mnt/hgfs/shared/RWStore.properties /opt/blazegraph/conf
+>sudo chown tomcat:tomcat /opt/blazegraph/conf/RWStore.properties
+>sudo chmod 644 /opt/blazegraph/conf/RWStore.properties
+>sudo cp /mnt/hgfs/shared/blazegraph.properties /opt/blazegraph/conf
+>sudo chown tomcat:tomcat /opt/blazegraph/conf/blazegraph.properties
+>sudo chmod 644 /opt/blazegraph/conf/blazegraph.properties
+>sudo cp /mnt/hgfs/shared/inference.nt /opt/blazegraph/conf
+>sudo chown tomcat:tomcat /opt/blazegraph/conf/inference.nt
+>sudo chmod 644 /opt/blazegraph/conf/inference.nt
+>sudo chown -R tomcat:tomcat /opt/blazegraph/conf
+>sudo chmod -R 644 /opt/blazegraph/conf
+>```
+### Specifying the RWStore.properties in JAVA_OPTS:
+- ```sudo nano /opt/tomcat/bin/setenv.sh```
+Comment line 6 and uncomment line 7:
+
+- **Before:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -DconnectionTimeout=-1 -server -Xmx1500m -Xms1000m"
+- **After:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -Dlogback.configurationFile=/opt/fcrepo/config/fcrepo-logback.xml -DconnectionTimeout=-1 Dcom.bigdata.rdf.sail.webapp.ConfigParams.propertyFile=/opt/blazegraph/conf/RWStore.properties -Dlog4j.configuration=file:/opt/blazegraph/conf/log4j.properties -server -Xmx1500m -Xms1000m"
+- sudo systemctl restart tomcat
+### Installing Blazegraph Namespaces and Inference:
+- ```sudo curl -X POST -H "Content-Type: text/plain" --data-binary @/opt/blazegraph/conf/blazegraph.properties http://localhost:8080/blazegraph/namespace```
+- 
+If this worked correctly, Blazegraph should respond with **"CREATED: islandora"** to let us know it created the islandora namespace.
+
+- ```sudo curl -X POST -H "Content-Type: text/plain" --data-binary @/opt/blazegraph/conf/inference.nt http://localhost:8080/blazegraph/namespace/islandora/sparql```
+If this worked correctly, Blazegraph should respond with some XML letting us know it added the 2 entries from inference.nt to the namespace.
+
+## installing solr
+#### Check JAVA_HOME:
+- ```sudo nano ~/.bashrc```
+>```
+>export JAVA_HOME=/usr/lib/jvm/java-17.0.1-openjdk-amd64
+>export PATH=$JAVA_HOME/bin:$PATH
+>```
+- ```source ~/.bashrc```
+
+#### download 9.x solr:
+>cd /opt
+>sudo wget https://www.apache.org/dyn/closer.lua/solr/solr/9.6.0/solr-9.6.0.tgz?action=download```
+>sudo mv solr-9.6.0.tgz?action=download solr-9.6.0.tgz```
+>sudo tar xzf solr-9.6.0.tgz solr-9.6.0/bin/install_solr_service.sh --strip-components=2```
+>```
+#### Install Solr:
+- run following as root to extract and install solr:
+``` sudo bash ./install_solr_service.sh solr-9.6.0.tgz -i /opt -d /var/solr -u solr -s solr -p 8983```
+##### Runnig the above command will do the following:
+- extracted solr-9.6.0 to /opt
+- symlink /opt.solr -> /opt/solr-9.6.0
+- installed /etc/init.d/solr script 
+- installed /etc/default/solr.in.sh
+- service solr installed
+##### to customize solr startup configuration go to this directory /etc/default/solr.in.sh:
+- SOLR_PID_DIR="/var/solr"
+- SOLR_HOME="/var/solr/data"
+- LOG4J_PROPS="/var/solr/log4j2.xml"
+- SOLR_LOGS_DIR="/var/solr/logs"
+- SOLR_PORT="8983"
+  
+#### Adjust Kernel Parameters:
+
+- ```sudo su```
+- ```sudo echo "fs.file-max = 65535" >> /etc/sysctl.conf```
+- ```sudo sysctl -p```
+
+#### Create Solr Core
+
+- ```sudo mkdir -p /var/solr/data/islandora8```
+- ```sudo mkdir -p /var/solr/data/islandora8/conf```
+- ```cp /mnt/shared/solr_9.x_config/* /var/solr/data/islandora10/conf/```
+- ```sudo chown -R solr:solr /var/solr```
+- ```cd /opt/solr```
+- ```sudo -u solr bin/solr create -c islandora10 -p 8983```
+**We will configure index via gui after site installed***
+
+## Crayfish microservices
+#### Adding this PPA to your system:
+- ```sudo add-apt-repository -y ppa:lyrasis/imagemagick-jp2```
+- ```sudo apt-get update```
+- ```sudo apt-get -y install imagemagick tesseract-ocr ffmpeg poppler-utils```
+
+#### Cloning and Installing Crayfish:
+- ```sh /mnt/hgfs/shared/crayfish_reqs.sh```
+
+It's running the following:
+>```
+>cd /opt
+>sudo git clone https://github.com/Islandora/Crayfish.git crayfish```
+>sudo chown -R www-data:www-data crayfish```
+>sudo -u www-data composer install -d crayfish/Homarus
+>sudo -u www-data composer install -d crayfish/Houdini
+>sudo -u www-data composer install -d crayfish/Hypercube
+>sudo -u www-data composer install -d crayfish/Milliner
+>sudo -u www-data composer install -d crayfish/Recast
+>```
+#### Preparing Logging:
+- ```sudo mkdir /var/log/islandora```
+- ```sudo chown www-data:www-data /var/log/islandora```
+
+#### moving config files over:
+- ```sh /mnt/hgfs/shared/conf/Crayfish-confs/microservices-config.sh```
+
+Folowing command will move Crayfish Microservices Config files and Apache Config files over.
+### NEW FILE IN SHARED!
+- ```sudo a2enconf Homarus Houdini Hypercube Milliner Recast```
+- ```sudo systemctl reload apache2```
+
+## ActiveMQ/Alpaca/Karaf/Crayfish:
+### 1. ActiveMQ:
+#### The latest ActiveMQ manual installation:
+>```
+>cd /usr/share/
+>sudo wget https://archive.apache.org/dist/activemq/5.17.6/apache-activemq-5.17.6-bin.zip  => Not Active, NOT JAVA17x
+>sudo wget https://archive.apache.org/dist/activemq/6.1.2/apache-activemq-6.1.2-bin.zip
+>sudo unzip apache-activemq-6.1.2-bin.zip
+>sudo mv apache-activemq-6.1.2 activemq
+>```
+- Create directories:
+>```
+>sudo mkdir -p /var/lib/activemq
+>sudo mkdir -p /var/lib/activemq/conf
+>```
+
+#### Create an ActiveMQ System User and Set Permissions:
+>```
+>cd /usr/share/activemq
+>sudo useradd -r activemq -d /var/lib/activemq -s /sbin/nologin
+>sudo chown -R activemq:activemq /var/lib/activemq
+>sudo chown -R activemq:activemq /usr/share/activemq
+>```
+
+#### Set Up Service:
+- ```sudo cp /mnt/hgfs/shared/activemq.service /etc/systemd/system/activemq.service```
+- reload systemd to recognize the new service ```sudo systemctl daemon-reload```
+
+#### Enable an start Service:
+>```
+>sudo systemctl enable activemq
+>sudo systemctl start activemq
+>sudo systemctl status activemq
+>```
+
+#### Set manual ActiveMQ as default ActiveMQ:
+add activemq bin directory to default environment variable:
+>```
+>sudo ~/.bashrc
+>export PATH=$PATH:/usr/share/activemq/bin
+>source ~/.bashrc
+>```
+
+#### Create a symbolic link For ActiveMQ:
+- ```sudo ln -s /usr/share/activemq/bin/activemq /usr/local/bin/activemq```
+- Check ActiveMQ Version to make sure it is installed and system can find the right service version:
+- ```activemq --version```
+
+#### ActiveMQ ConfigurationL
+ActiveMQ expected to be listening for STOMP messages at a tcp url. If not the default tcp://127.0.0.1:61613, this will have to be set:
+- ```sudo nano /usr/share/activemq/conf/activemq.xml```
+- Inside the <transportConnectors> element, find the configuration for the STOMP transport connector and change the stomp url to 127.0.0.1:61613
+- ```name="stomp" uri="stomp://127.0.0.1:61613"```
+
+### 2. Karaf (karaf is not been used to install latest Alpaca Microservices any more, We will install alpaca Microservices in a another way later)
+>```
+>sudo addgroup karaf
+>sudo adduser karaf --ingroup karaf --home /opt/karaf --shell /usr/bin
+>```
+#### Downloading and Placing Karaf:
+>```
+>cd /opt
+>sudo wget -O karaf.tar.gz https://dlcdn.apache.org/karaf/4.4.6/apache-karaf-4.4.6.tar.gz
+>sudo tar -xzvf karaf.tar.gz
+>sudo chown -R karaf:karaf apache-karaf-4.4.6
+>sudo mv apache-karaf-4.4.6/* /opt/karaf
+>```
+
+#### Configuring Karaf Logging:
+>```
+>sudo mkdir /var/log/karaf
+>sudo chown karaf:karaf /var/log/karaf
+>sudo cp /mnt/hgfs/shared/org.pos4j.pax.logging.cfg /opt/karaf/etc/org.pos4j.pax.logging.cfg
+>sudo chown karaf:karaf /opt/karaf/etc/org.pos4j.pax.logging.cfg
+>sudo chmod 644 /opt/karaf/etc/org.pos4j.pax.logging.cfg
+>```
+
+#### Creating a setenv.sh Script for Karaf:
+Similar to Tomcat, our Karaf service is going to rely on a setenv shell script to determine environment variables Karaf needs in place when running.
+- ```sudo su```
+- ```sudo echo '#!/bin/sh' >> /opt/karaf/bin/setenv```
+- ```sudo echo 'export JAVA_HOME="/usr/lib/jvm/java-17.0.1-openjdk-amd64"' >> /opt/karaf/bin/setenv```
+- sudo chown karaf:karaf /opt/karaf/bin/setenv
+- sudo chmod 755 /opt/karaf/bin/setenv
+
+#### Initializing Karaf:
+```sudo nano /opt/karaf/etc/users.properties```
+>```
+32 | # karaf = karaf,_g_:admingroup
+33 | # _g_\:admingroup = group,admin,manager,viewer,systembundles,ssh
+>```
+
+
+#### start karaf:
+- ```sudo -u karaf /opt/karaf/bin/start```
+
+You may want to wait a bit for Karaf to start.
+run these commands to confirm that the process for karaf is running:
+
+- ```ps aux | grep karaf```
+
+#### Feature and Install wrapper:
+>```
+>sudo /opt/karaf/bin/client feature:install wrapper
+>sudo /opt/karaf/bin/client wrapper:install
+>sudo /opt/karaf/bin/stop
+>```
+
+#### Creating and Starting the Karaf Service:
+sudo systemctl enable /opt/karaf/bin/karaf.service
+sudo systemctl start karaf
+sudo systemctl status karaf
+
+##### If Karaf could not make alias karaf.service as karaf, try following:
+>```
+>sudo ln -s /opt/karaf/bin/karaf-service /etc/init.d/
+>sudo systemctl daemon-reload
+>#start the service
+>sudo /etc/init.d/karaf-service start
+>sudo systemctl enable /opt/karaf/bin/karaf.service
+>sudo systemctl daemon-reload
+>sudo systemctl start karaf
+>sudo systemctl status karaf
+>```
+
+### 3. Alpaca:
+#### Check Alpaca installation in offial Islandora Github. (https://islandora.github.io/documentation/installation/manual/installing-alpaca/)
+
+
