@@ -225,8 +225,7 @@ The following shell script will execute the commands below:
 
 
 ## install tomcat and cantaloupe
-### Install JAVA 
-***Install JAVA 17.0.1 manualy***
+### Install JAVA 17.0.1 
 - ***Create directory for Java installation:***
 >```
 >sudo mkdir /usr/lib/jvm
