@@ -206,7 +206,7 @@ scratch_3.sh contents:
 
 
 #### Add PDO extentions for postgresql and mysql:
->sh /mnt/hgfs/shared/PDO-extensions.sh
+- ```sh /mnt/hgfs/shared/PDO-extensions.sh```
 The following shell script will execute the commands below:
 >```
 >sudo apt-get install php8.3-mysql
@@ -322,7 +322,7 @@ if Cantaloupe version changes, change the version number
 >sudo systemctl start cantaloupe
 >sudo systemctl daemon-reload
 >```
-- ***Configure Cantaloupe URL***
+- ***Configure Cantaloupe URL(Important)***
 >```
 >sudo nano /opt/cantaloupe_config/cantaloupe.properties
 >base_uri = http://127.0.0.1:8182/iiif/2
@@ -531,11 +531,12 @@ If this worked correctly, Blazegraph should respond with some XML letting us kno
 >cd /opt
 >sudo wget https://www.apache.org/dyn/closer.lua/solr/solr/9.6.0/solr-9.6.0.tgz?action=download```
 >sudo mv solr-9.6.0.tgz?action=download solr-9.6.0.tgz```
->sudo tar xzf solr-9.6.0.tgz solr-9.6.0/bin/install_solr_service.sh --strip-components=2```
+>sudo tar xzf solr-9.6.0.tgz solr-9.6.0/bin/install_solr_service.sh --strip-components=2
 >```
 #### Install Solr:
-- run following as root to extract and install solr:
-``` sudo bash ./install_solr_service.sh solr-9.6.0.tgz -i /opt -d /var/solr -u solr -s solr -p 8983```
+run following as root to extract and install solr:
+
+- ```sudo bash ./install_solr_service.sh solr-9.6.0.tgz -i /opt -d /var/solr -u solr -s solr -p 8983```
 ##### Runnig the above command will do the following:
 - extracted solr-9.6.0 to /opt
 - symlink /opt.solr -> /opt/solr-9.6.0
@@ -593,7 +594,6 @@ It's running the following:
 - ```sh /mnt/hgfs/shared/conf/Crayfish-confs/microservices-config.sh```
 
 Folowing command will move Crayfish Microservices Config files and Apache Config files over.
-### NEW FILE IN SHARED!
 - ```sudo a2enconf Homarus Houdini Hypercube Milliner Recast```
 - ```sudo systemctl reload apache2```
 
@@ -602,7 +602,6 @@ Folowing command will move Crayfish Microservices Config files and Apache Config
 #### The latest ActiveMQ manual installation:
 >```
 >cd /usr/share/
->sudo wget https://archive.apache.org/dist/activemq/5.17.6/apache-activemq-5.17.6-bin.zip  => Not Active, NOT JAVA17x
 >sudo wget https://archive.apache.org/dist/activemq/6.1.2/apache-activemq-6.1.2-bin.zip
 >sudo unzip apache-activemq-6.1.2-bin.zip
 >sudo mv apache-activemq-6.1.2 activemq
@@ -645,7 +644,7 @@ add activemq bin directory to default environment variable:
 - Check ActiveMQ Version to make sure it is installed and system can find the right service version:
 - ```activemq --version```
 
-#### ActiveMQ ConfigurationL
+#### ActiveMQ ConfigurationL(Important)
 ActiveMQ expected to be listening for STOMP messages at a tcp url. If not the default tcp://127.0.0.1:61613, this will have to be set:
 - ```sudo nano /usr/share/activemq/conf/activemq.xml```
 - Inside the <transportConnectors> element, find the configuration for the STOMP transport connector and change the stomp url to 127.0.0.1:61613
