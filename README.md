@@ -537,6 +537,7 @@ If this worked correctly, Blazegraph should respond with some XML letting us kno
 run following as root to extract and install solr:
 
 - ```sudo bash ./install_solr_service.sh solr-9.6.0.tgz -i /opt -d /var/solr -u solr -s solr -p 8983```
+
 ##### Runnig the above command will do the following:
 - extracted solr-9.6.0 to /opt
 - symlink /opt.solr -> /opt/solr-9.6.0
@@ -650,9 +651,9 @@ ActiveMQ expected to be listening for STOMP messages at a tcp url. If not the de
 - Inside the <transportConnectors> element, find the configuration for the STOMP transport connector and change the stomp url to 127.0.0.1:61613
 - ```name="stomp" uri="stomp://127.0.0.1:61613"```
 
-### 2. Karaf (karaf is not been used to install latest Alpaca Microservices any more, We will install alpaca Microservices in a another way later)
+## 2. Karaf (karaf is not been used to install latest Alpaca Microservices any more, We will install alpaca Microservices in a another way later)
 
-### 3. Alpaca:
+## 3. Alpaca:
 #### Check Alpaca installation in offial Islandora Github. (https://islandora.github.io/documentation/installation/manual/installing-alpaca/)
 
 ## Download and Scaffold Drupal, Create a project using the Islandora Starter Site:
