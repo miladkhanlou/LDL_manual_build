@@ -230,7 +230,7 @@ The following shell script will execute the commands below:
 >```
 >sudo mkdir /usr/lib/jvm
 >cd /usr/lib/jvm
->>```
+>```
 - ***Download and extract the Java archive:***
 >```
 >sudo wget -O openjdk-17.0.1.tar.gz https://download.java.net/java/GA/jdk17.0.1/2a2082e5a09d4267845be086888add4f/12/GPL/openjdk-17.0.1_linux-x64_bin.tar.gz
@@ -252,7 +252,7 @@ The following shell script will execute the commands below:
 >update-alternatives --list java
 >```
 The output should include a line similar to: "/usr/lib/jvm/java-11-openjdk-amd64/bin/java"
-note this path for later use as JAVA_HOME. it is the same as the path above without "/bin/java". "/usr/lib/jvm/java-11-openjdk-amd64"- ***Add Java_HOME in default environment variables***
+note this path for later use as JAVA_HOME. it is the same as the path above without "/bin/java". "/usr/lib/jvm/java-117.0.1-openjdk-amd64"- ***Add Java_HOME in default environment variables***
 - ***Add JAVA_HOME to Default Environment Variables:***
 >```
 >echo 'export JAVA_HOME=/usr/lib/jvm/java-17.0.1-openjdk-amd64' >> ~/.bashrc
@@ -308,8 +308,8 @@ if Cantaloupe version changes, change the version number
 >sudo mkdir /opt/cantaloupe_config
 >```
 - ***copy the configurations into cantaloupe_config***
-sudo cp cantaloupe-5.0.6/cantaloupe.properties.sample /opt/cantaloupe_config/cantaloupe.properties
-sudo cp cantaloupe-5.0.6/delegates.rb.sample /opt/cantaloupe_config/delegates.rb
+- sudo cp cantaloupe-5.0.6/cantaloupe.properties.sample /opt/cantaloupe_config/cantaloupe.properties
+- sudo cp cantaloupe-5.0.6/delegates.rb.sample /opt/cantaloupe_config/delegates.rb
 
 - ***Copy cantaloupe service syetem directory, check the version of your cantaloup in cantaloupe.service***
 >```
@@ -389,7 +389,7 @@ save (CTL-o) exit (CTL+x)
 
 - ***Edit and Ensuring Tomcat Users Are In Place***
 Add following to xml after version="1.0" in <tomcat-users>:
-``sudo nano /opt/tomcat/conf/tomcat-users.xml``
+- ``sudo nano /opt/tomcat/conf/tomcat-users.xml``
 >```
 >  <role rolename="tomcat"/>
 >  <role rolename="fedoraAdmin"/>
@@ -408,8 +408,8 @@ Add following to xml after version="1.0" in <tomcat-users>:
 ```sh /mnt/hgfs/shared/fedora-dl.sh```
 The following shell script will execute the commands below
 >```
->sudo wget -O fcrepo.war https://github.com/fcrepo/fcrepo/releases/download/fcrepo-6.4.1/fcrepo-webapp-6.4.1.war
->sudo wget -O fcrepo.war https://github.com/fcrepo/fcrepo/releases/download/fcrepo-6.5.0/fcrepo-webapp-6.5.0.war
+>#!/bin/bash
+>sudo wget -O fcrepo.war https://github.com/fcrepo/fcrepo/releases/download/fcrepo-6.4.0/fcrepo-webapp-6.4.0.war
 >sudo mv fcrepo.war /opt/tomcat/webapps
 >sudo chown tomcat:tomcat /opt/tomcat/webapps/fcrepo.war
 >sudo systemctl restart tomcat
@@ -418,15 +418,6 @@ The following shell script will execute the commands below
 you may want to check
 visit: https://github.com/fcrepo/fcrepo/releases choose the latest version and ajust the commands below if needed
 
-- run this command:
-
->```
->#!/bin/bash
->sudo wget -O fcrepo.war https://github.com/fcrepo/fcrepo/releases/download/fcrepo-6.4.0/fcrepo-webapp-6.4.0.war
->sudo mv fcrepo.war /opt/tomcat/webapps
->sudo chown tomcat:tomcat /opt/tomcat/webapps/fcrepo.war
->sudo systemctl restart tomcat
->```
 
 ##
 
@@ -459,7 +450,7 @@ The following shell script will execute the commands below:
 - ```sudo nano /opt/tomcat/conf/context.xml
 Add this line before the closing tag:
 >```
->    <Valve className="ca.islandora.syn.valve.SynValve" pathname="/opt/fcrepo/config/syn-settings.xml"/>
+><Valve className="ca.islandora.syn.valve.SynValve" pathname="/opt/fcrepo/config/syn-settings.xml"/>
 ></Context>
 >```
 - ```sudo systemctl restart tomcat```
