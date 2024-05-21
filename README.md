@@ -917,4 +917,4 @@ mimic_implicite for postgresql error occures while creating new content, After g
 # Run workbench ingest:
 - after running our transformation tools, we now run the workbench to ingest our content to the server:
    - ```cd islandora_workbench```
-   - ./workbench --config LDLingest.yml```
+   - ```./workbench --config LDLingest.yml```
