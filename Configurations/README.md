@@ -1,6 +1,6 @@
 **Copy files in New_configuration and Updated_configuration into the original shared folder on OneDrive before starting site installation.**
 
-# Changes:
+## Changes:
 ### Updates in Shared folder:
 - scratch_1.sh
 - scratch_2.sh
