@@ -1,0 +1,10 @@
+#cantaloupe.service
+[Unit]
+Description=Cantaloupe
+
+[Service]
+ExecStart=java -cp /opt/cantaloupe-5.0.6/cantaloupe-5.0.6.jar -Dcantaloupe.config=/opt/cantaloupe_config/cantaloupe.properties -Xmx1500m -Xms1000m edu.illinois.library.cantaloupe.StandaloneEntry
+SyslogIdentifier=cantaloupe
+
+[Install]
+WantedBy=multi-user.target
