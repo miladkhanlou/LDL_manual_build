@@ -784,22 +784,26 @@ for example, giving the default admin user the role:
   - Check if 61613 is active and being listed to
  
 #### Configure solr:
-- Check for bellow configuration:
+- **Check for bellow configuration:**
   - Check solr is availabe at port 8983: sudo netstat -tuln | grep LISTEN
   - Check solr is running if not run: sudo /opt/solr/bin/start 
   - Then restart: sudo systemctl restart solr
   - Check if your solr core is installed!
-- In GUI: Navigate to admin/config/search/search-api edit the existing server or create one:
+
+- **In GUI**: Navigate to admin/config/search/search-api edit the existing server or create one:
   - backend: Solr
   - Solr Connector: Standard
   - Solr core: islandora8
-- In settings.php:
+- **In settings.php:**
   - Set search_api.server.default_solr_server backend_config.connector_config.host
     - $settings['search_api.server.default_solr_server']['backend_config']['connector_config']['host'] = '127.0.0.1';
+
   - Solr port: Set search_api.server.default_solr_server backend_config.connector_config.port
     - $settings['search_api.server.default_solr_server']['backend_config']['connector_config']['port'] = '8983';
+   
   - Solr, core name: Set search_api.server.default_solr_server backend_config.connector_config.core
     - $settings['search_api.server.default_solr_server']['backend_config']['connector_config']['core'] = 'islandora8';
+ 
 #### Check syn/jwt configuration
 #### keys must be available at /opt/keys/syn_private.key
  - Symlinking the private key to /opt/drupal/keys/private.key
