@@ -842,8 +842,9 @@ run the migration tagged with islandora  to populate some taxonomies.
 
 # Group Configuration:
 #### group type:
-set available content and install group media and group media image and all:
-- Navigate to ```configuration -> access controll -> islandora access and select islandora_access```
+- set available content and install group media and group media image and all:
+
+Navigate to ```configuration -> access controll -> islandora access and select islandora_access```
 
 #### create a group:
 - Navigate to ```structure -> content types -> repository item -> manage fields -> create a access terms -> type is Reference  	-> Reference type: Taxonomy term, Vocabulary: Islandora Access```
@@ -852,8 +853,9 @@ set available content and install group media and group media image and all:
 - Navigate to ```structure -> mediatypes -> edit one of the media types -> edit -> manage fields -> create a field -> create 	a access terms -> type is Reference  -> Reference type = Islandora Access```
 
 #### Media types Access term:
-for each media type we need to have access terms so we re use the one we created
-- Navigate to configuration -> access controll -> islandora access and select islandora_access -> select islandora_access
+- for each media type we need to have access terms so we re use the one we created
+
+Navigate to configuration -> access controll -> islandora access and select islandora_access -> select islandora_access
 
 #### Groups role and group role permissions:
 - Groups must be created with the Administrator role, insider and ousider, and individual user. 
@@ -862,15 +864,18 @@ for each media type we need to have access terms so we re use the one we created
    - Edit the Roles under the group type and creat an Outsider Administrator Role that can see and delete individual groups 
 
 #### Fix the destination for each media type (Important for media ingestion for each media types):
- -Navigate ```Structure>Media types```
- -for each media type edit the field that type is file and set Upload destination to the Public files instead of fedora:
-   -Example: for audio: field_media_audio_file
-   -Except image, and specifically, field_media_image that file type is image
- -Ensure you have set maxiumum file size
-   -we can do it at this point if where we're editing each mediaTypes 
-   -might be doable in settings.php, when we setting flysystem to fedora
-   -might any settings that we define the destination such as apache php.ini
- -restart apache and tomcat, daemon-reload, cache rebuild
+- Navigate ```Structure>Media types```
+ 
+- for each media type edit the field that type is file and set Upload destination to the Public files instead of fedora:
+   - Example: for audio: field_media_audio_file
+   - Except image, and specifically, field_media_image that file type is image
+
+- Ensure you have set maxiumum file size
+   - we can do it at this point if where we're editing each mediaTypes 
+   - might be doable in settings.php, when we setting flysystem to fedora
+   - might any settings that we define the destination such as apache php.ini
+
+- restart apache and tomcat, daemon-reload, cache rebuild
 
 # re-islandora Workbench to be on V1.0.0:
 #### Remove dev version and install V1 cause dev version is not determined by workbench anymore:
