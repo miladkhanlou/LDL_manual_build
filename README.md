@@ -824,9 +824,12 @@ for example, giving the default admin user the role:
 visit /admin/config/media/file-system to select the flysystem from the dropdown.
 
 
-## Run the migrations tagged with islandora to populate some taxonomies and Enabling EVA Views:
+## Run the migrations command and Enabling EVA Views:
+run the migration tagged with islandora  to populate some taxonomies.
+
 #### Run the migrations taged with islandora:
 - ```composer exec -- drush migrate:import --userid=1 --tag=islandora```
+
 #### Enabling EVA Views:
 - ```drush -y views:enable display_media```
 
