@@ -680,7 +680,7 @@ Check Alpaca installation in offial Islandora Github:
 >```
 >$settings['trusted_host_patterns'] = [
 >  'localhost',
->  '192.168.253.128',
+>  'YOUR_IP',
 >];
 >
 >$settings['flysystem'] = [
@@ -732,35 +732,44 @@ Then restart apache2 ```sudo systemctl restart apache2```
 #### Change default username and password:
 - ```sudo drush upwd admin admin```
 
-## Add (or otherwise create) a user to the fedoraadmin role; for example, giving the default admin user the role:(Optional)
-- **1. Using Composer:**
+## Add (or otherwise create) a user to the fedoraadmin role:(Optional)
+for example, giving the default admin user the role:
+
+#### 1. Using Composer:
 - ```cd /opt/drupal/islandora-starter-site```
 - ```composer exec -- drush user:role:add fedoraadmin admin```
  
-- **2. Using Drush:**
+#### 2. Using Drush:**
 - cd /opt/drupal/islandora-starter-site
-sudo -u www-data drush -y urol "fedoraadmin" admin
+- sudo -u www-data drush -y urol "fedoraadmin" admin
 
 ## Configure the locations of external services(Some already configured in prerequsits)
-#### What already have been configured so far:
+#### Check following configurations before moving forward:
 - check if your services like cantaloupe, apache, tomcat, databases are available and working
 - check if you have already configured the cantaloup IIIF base URL to http://127.0.0.1:8182/iiif/2
 - check if you have already configured activemq.xml in name="stomp" uri="tcp://127.0.0.1:61613"
-#### make sure keys are inplace in /opt/keys/syn_private.key
-
+- 
 #### solr search_api installation and fiele size:
 - ```sudo -u www-data composer require drupal/search_api_solr```
 
 ### Configurations:
 #### 1. Configure Cantaloupe OpenSeaDragon:
 - In GUI:
-  - set location of the cantaloupe iiif endpoint to http://localhost:8182/iiif/2
+- Navigate to ```http://[your-site-ip-address]/admin/config/media/openseadragon```
+
+- set location of the cantaloupe iiif endpoint to http://localhost:8182/iiif/2
+
+- select IIIF Manifest from dropdown
+
+- save
+
 - In settings.php:
   - $settings['openseadragon.settings']['iiif_server'] = 'http://127.0.0.1:8182/iiif/2';
 
 #### Configure Cantaloupe for Islandora IIIF:
 - In GUI:
   - /admin/config/islandora/iiif
+  - set location of the cantaloupe: http://127.0.0.1:8182/iiif/2
 - In settings.php:
   - $settings['islandora_iiif.settings']['iiif_server'] = 'http://127.0.0.1:8182/iiif/2';
 
@@ -805,6 +814,9 @@ sudo -u www-data drush -y urol "fedoraadmin" admin
  - Then, Navigate to /admin/config/system/jwt
     - Select the key you justy created
     - Save configuration
+#### Select default Flysystem:
+visit /admin/config/media/file-system to select the flysystem from the dropdown.
+
 
 ## Run the migrations tagged with islandora to populate some taxonomies and Enabling EVA Views:
 #### Run the migrations taged with islandora:
