@@ -777,8 +777,10 @@ Some, we already configured in prerequsits, but we will make sure all the config
 - In GUI:
   - /admin/config/islandora/core
   - set brocker URL to tcp://127.0.0.1:61613 
+
 - In settings.php:
   - $settings['islandora.settings']['broker_url'] = 'tcp://127.0.0.1:61613';
+
 - If activeMQ was not active check activemq.service:
   - sudo netstat -tuln | grep LISTEN
   - Check if 61613 is active and being listed to
