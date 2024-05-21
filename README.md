@@ -731,7 +731,7 @@ Then restart apache2 ```sudo systemctl restart apache2```
 #### Change default username and password:
 - ```sudo drush upwd admin admin```
 
-# Add (or otherwise create) a user to the fedoraadmin role:(Optional)
+# Add a user to the fedoraadmin role:(Optional)
 for example, giving the default admin user the role:
 
 #### 1. Using Composer:
@@ -742,12 +742,13 @@ for example, giving the default admin user the role:
 - cd /opt/drupal/islandora-starter-site
 - sudo -u www-data drush -y urol "fedoraadmin" admin
 
-# Configure the locations of external services(Some already configured in prerequsits)
+# Configure the locations of external services:
+Some, we already configured in prerequsits, but we will make sure all the configurations are in place.
 #### Check following configurations before moving forward:
 - check if your services like cantaloupe, apache, tomcat, databases are available and working
 - check if you have already configured the cantaloup IIIF base URL to http://127.0.0.1:8182/iiif/2
 - check if you have already configured activemq.xml in name="stomp" uri="tcp://127.0.0.1:61613"
-- 
+
 #### solr search_api installation and fiele size:
 - ```sudo -u www-data composer require drupal/search_api_solr```
 
