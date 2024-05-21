@@ -808,16 +808,18 @@ for example, giving the default admin user the role:
 #### keys must be available at /opt/keys/syn_private.key
  - Symlinking the private key to /opt/drupal/keys/private.key
    - ```sudo ln -s /opt/keys/syn_private.key /usr/local/bin/drush```
-- In GUI:
+- **In GUI:**
   - First, Navigate to /admin/config/system/keys/add
     - key type: JWT RSA KEy
     - JWT Algorithm: RSAASA-PKCXS1-v1_5 Using SHA-256(RS256)
     - Key Provider: file
     - File location: /opt/keys/syn_private.key
     - Save
+   
  - Then, Navigate to /admin/config/system/jwt
     - Select the key you justy created
     - Save configuration
+
 #### Select default Flysystem:
 visit /admin/config/media/file-system to select the flysystem from the dropdown.
 
