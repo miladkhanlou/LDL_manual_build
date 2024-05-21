@@ -64,7 +64,7 @@ the above command runs a script containing the following:
 >sudo apt update
 >``` 
  
-## Install php and postgresql:
+# Install php and postgresql:
 - ```sh /mnt/hgfs/shared/scratch_2.sh```
 the above command runs the following script the :
 >```
@@ -95,7 +95,7 @@ change to
 >```
 - ```sudo systemctl restart postgresql```
 
-## Setting Up PostgreSQL Database and User for Drupal 10:
+# Setting Up PostgreSQL Database and User for Drupal 10:
 ***create up a drupal10 database and user***
 
 - ```sudo -u postgres psql```
@@ -131,7 +131,7 @@ from within the postgres cli change to drupal10:
 >#local	  DATABASE		   USER			                                  METHOD
 >```
 
-## Install Composer
+# Install Composer
 
 - ```sh /mnt/hgfs/shared/scratch_3.sh```
 
@@ -149,7 +149,7 @@ scratch_3.sh contents:
 >```
 
 
-## Configure apache server settings:
+# Configure apache server settings:
 - ```sudo cp /mnt/hgfs/shared/ports.conf /etc/apache2/ports.conf```
 - ***Apache virtual host configuration***
 - We edit the default virtual host configuration file located in /etc/apache2/sites-available/ and /etc/apache2/sites-enabled/.
@@ -224,7 +224,7 @@ The following shell script will execute the commands below:
 - ```sudo systemctl status postgresql apache2```
 
 
-## install tomcat and cantaloupe
+# install tomcat and cantaloupe
 ### Install JAVA 17.0.1 
 - ***Create directory for Java installation:***
 >```
@@ -299,7 +299,8 @@ scratch_5.sh (if the tomcat tarball link is different you must change the path i
 >sudo systemctl status tomcat
 >```
 - ***NOTE: Setenv fixed and updated***
-## Cantatloupe:
+
+### Cantatloupe:
 - ***Install Cantaloupe 5.0.6***
 if Cantaloupe version changes, change the version number
 >```
@@ -419,9 +420,7 @@ you may want to check
 visit: https://github.com/fcrepo/fcrepo/releases choose the latest version and ajust the commands below if needed
 
 
-##
-
-## Syn:
+# Syn:
 ### Download syn:
 check here for link: https://github.com/Islandora/Syn/releases/ copy the link (if changed from syn-1.1.1) and replace the link in the command below:
 - run the command:
@@ -467,7 +466,7 @@ Add this line before the closing tag:
 - **Before:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -DconnectionTimeout=-1 -server -Xmx1500m -Xms1000m"
 - **After:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -Dlogback.configurationFile=/opt/fcrepo/config/fcrepo-logback.xml -DconnectionTimeout=-1 -server -Xmx1500m -Xms1000m"
 
-## installing blazegraph
+# installing blazegraph
 ### Creating a Working Space for Blazegraph and install Blazegraph:
 - ```sh /mnt/hgfs/shared/blazegraph-dl.sh```
 >```
@@ -517,7 +516,7 @@ If this worked correctly, Blazegraph should respond with **"CREATED: islandora"*
 
 If this worked correctly, Blazegraph should respond with some XML letting us know it added the 2 entries from inference.nt to the namespace.
 
-## installing solr
+# installing solr
 #### Check JAVA_HOME:
 - ```sudo nano ~/.bashrc```
 >```
@@ -567,7 +566,7 @@ run following as root to extract and install solr:
 - ```sudo -u solr bin/solr create -c islandora10 -p 8983```
 **We will configure index via gui after site installed***
 
-## Crayfish microservices
+# Crayfish microservices
 #### Adding this PPA to your system:
 - ```sudo add-apt-repository -y ppa:lyrasis/imagemagick-jp2```
 - ```sudo apt-get update```
@@ -598,7 +597,7 @@ Folowing command will move Crayfish Microservices Config files and Apache Config
 - ```sudo a2enconf Homarus Houdini Hypercube Milliner Recast```
 - ```sudo systemctl reload apache2```
 
-## ActiveMQ/Alpaca/Karaf/Crayfish:
+# ActiveMQ/Alpaca/Karaf/Crayfish:
 ### 1. ActiveMQ:
 #### The latest ActiveMQ manual installation:
 >```
@@ -651,15 +650,15 @@ ActiveMQ expected to be listening for STOMP messages at a tcp url. If not the de
 - Inside the <transportConnectors> element, find the configuration for the STOMP transport connector and change the stomp url to 127.0.0.1:61613
 - ```name="stomp" uri="stomp://127.0.0.1:61613"```
 
-## 2. Karaf 
+# 2. Karaf 
 karaf is not been used to install latest Alpaca Microservices any more, We will install alpaca Microservices in a another way later
 
-## 3. Alpaca:
+# 3. Alpaca:
 Check Alpaca installation in offial Islandora Github:
 
 - (https://islandora.github.io/documentation/installation/manual/installing-alpaca/)
 
-## Download and Scaffold Drupal, Create a project using the Islandora Starter Site:
+# Download and Scaffold Drupal, Create a project using the Islandora Starter Site:
 #### install php-intl 8.3:
 ```sudo apt-get install php8.3-intl```
 
@@ -723,7 +722,7 @@ Then restart apache2 ```sudo systemctl restart apache2```
 - You should have granted all privileges to the user Drupal when created the table and databases before site install so that these are all permissions on user to create tables on database.
 - You should have installed PDO extention before site install.
 
-## Install the site using composer or drush:
+# Install the site using composer or drush:
 - **1. install using Composer:**
   - ```composer exec -- drush site:install --existing-config```
  
@@ -732,7 +731,7 @@ Then restart apache2 ```sudo systemctl restart apache2```
 #### Change default username and password:
 - ```sudo drush upwd admin admin```
 
-## Add (or otherwise create) a user to the fedoraadmin role:(Optional)
+# Add (or otherwise create) a user to the fedoraadmin role:(Optional)
 for example, giving the default admin user the role:
 
 #### 1. Using Composer:
@@ -743,7 +742,7 @@ for example, giving the default admin user the role:
 - cd /opt/drupal/islandora-starter-site
 - sudo -u www-data drush -y urol "fedoraadmin" admin
 
-## Configure the locations of external services(Some already configured in prerequsits)
+# Configure the locations of external services(Some already configured in prerequsits)
 #### Check following configurations before moving forward:
 - check if your services like cantaloupe, apache, tomcat, databases are available and working
 - check if you have already configured the cantaloup IIIF base URL to http://127.0.0.1:8182/iiif/2
@@ -833,7 +832,7 @@ run the migration tagged with islandora  to populate some taxonomies.
 #### Enabling EVA Views:
 - ```drush -y views:enable display_media```
 
-## instrall group modules and dependencies:
+# instrall group modules and dependencies:
 - ```cd /opt/drupal/islandora-starter-site```
 - ```sudo -u www-data composer require digitalutsc/islandora_group```
 - ```sudo -u www-data composer require 'drupal/rules:^3.0@alpha'```
@@ -841,7 +840,7 @@ run the migration tagged with islandora  to populate some taxonomies.
 #### Rebuild Cache:
 - ```drush cr```
 
-## Group Configuration:
+# Group Configuration:
 #### group type:
 set available content and install group media and group media image and all:
 - Navigate to ```configuration -> access controll -> islandora access and select islandora_access```
@@ -873,7 +872,7 @@ for each media type we need to have access terms so we re use the one we created
    -might any settings that we define the destination such as apache php.ini
  -restart apache and tomcat, daemon-reload, cache rebuild
 
-## re-islandora Workbench to be on V1.0.0:
+# re-islandora Workbench to be on V1.0.0:
 #### Remove dev version and install V1 cause dev version is not determined by workbench anymore:
 -remove mjordan/islandora_workbench_integration from composer.json and update composer
 
@@ -894,7 +893,7 @@ for each media type we need to have access terms so we re use the one we created
 - ```sudo nano /etc/php/8.3/apache2/php.ini```
 - ```max_file_uploads = ???```
 
-## Fix postgresql mimic_implicite error fix after islandora_group, islandora workbench installation:
+# Fix postgresql mimic_implicite error fix after islandora_group, islandora workbench installation:
 mimic_implicite for postgresql error occures while creating new content, After groupmedia module installaion, causes the content not to be created in postgresql database
 
 #### Copy the fixed posql edited phps:
@@ -905,9 +904,9 @@ mimic_implicite for postgresql error occures while creating new content, After g
 - ```sudo systemctl restart apache2 postgresql```
 - ```sudo systemctl status apache2 postgresql```
 
-## Configure default Flysystem
+# Configure default Flysystem
 
-## Run workbench ingest:
+# Run workbench ingest:
 - after running our transformation tools, we now run the workbench to ingest our content to the server:
    - ```cd islandora_workbench```
    - ./workbench --config LDLingest.yml```
