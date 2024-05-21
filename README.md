@@ -847,15 +847,15 @@ run the migration tagged with islandora  to populate some taxonomies.
 Navigate to ```configuration -> access controll -> islandora access and select islandora_access```
 
 #### create a group:
-- Navigate to ```structure -> content types -> repository item -> manage fields -> create a access terms -> type is Reference  	-> Reference type: Taxonomy term, Vocabulary: Islandora Access```
+- Navigate to ```structure -> content types -> repository item -> manage fields -> create a access terms -> type is Reference -> Reference type: Taxonomy term, Vocabulary: Islandora Access```
 
 #### Media type:
-- Navigate to ```structure -> mediatypes -> edit one of the media types -> edit -> manage fields -> create a field -> create 	a access terms -> type is Reference  -> Reference type = Islandora Access```
+- Navigate to ```structure -> mediatypes -> edit one of the media types -> edit -> manage fields -> create a field -> create a access terms -> type is Reference -> Reference type = Islandora Access```
 
 #### Media types Access term:
 - for each media type we need to have access terms so we re use the one we created
 
-Navigate to configuration -> access controll -> islandora access and select islandora_access -> select islandora_access
+Navigate to ```configuration -> access controll -> islandora access and select islandora_access -> select islandora_access```
 
 #### Groups role and group role permissions:
 - Groups must be created with the Administrator role, insider and ousider, and individual user. 
@@ -879,7 +879,7 @@ Navigate to configuration -> access controll -> islandora access and select isla
 
 # re-islandora Workbench to be on V1.0.0:
 #### Remove dev version and install V1 cause dev version is not determined by workbench anymore:
--remove mjordan/islandora_workbench_integration from composer.json and update composer
+- remove mjordan/islandora_workbench_integration from composer.json and update composer
 
 ```composer update```
 
@@ -901,7 +901,7 @@ Navigate to configuration -> access controll -> islandora access and select isla
 # Fix postgresql mimic_implicite error fix after islandora_group, islandora workbench installation:
 mimic_implicite for postgresql error occures while creating new content, After groupmedia module installaion, causes the content not to be created in postgresql database
 
-#### Copy the fixed posql edited phps:
+#### Copy the fixed postgresql edited php files over:
 - ```sudo cp /mnt/hgfs/shared/conf/postgreSQL/pgsql-drivers/core-module-pgsql-src-Driver/Connection.php /opt/drupal/islandora-starter-site/web/core/modules/pgsql/src/Driver/Database/pgsql/```
 - ```sudo cp /mnt/hgfs/shared/conf/postgreSQL/pgsql-drivers/core-module-pgsql-src-Driver/Select.php /opt/drupal/islandora-starter-site/web/core/modules/pgsql/src/Driver/Database/pgsql/```
 - ```drush cr```
