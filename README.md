@@ -601,14 +601,15 @@ run following as root to extract and install solr:
 It's running the following:
 >```
 >cd /opt
->sudo git clone https://github.com/Islandora/Crayfish.git crayfish```
->sudo chown -R www-data:www-data crayfish```
+>sudo git clone https://github.com/Islandora/Crayfish.git crayfish
+>sudo chown -R www-data:www-data crayfish
 >sudo -u www-data composer install -d crayfish/Homarus
 >sudo -u www-data composer install -d crayfish/Houdini
 >sudo -u www-data composer install -d crayfish/Hypercube
 >sudo -u www-data composer install -d crayfish/Milliner
 >sudo -u www-data composer install -d crayfish/Recast
 >```
+
 #### Preparing Logging:
 - ```sudo mkdir /var/log/islandora```
 - ```sudo chown www-data:www-data /var/log/islandora```
@@ -617,7 +618,44 @@ It's running the following:
 - ```sh /mnt/hgfs/shared/conf/Crayfish-confs/microservices-config.sh```
 
 Folowing command will move Crayfish Microservices Config files and Apache Config files over.
-- ```sudo a2enconf Homarus Houdini Hypercube Milliner Recast```
+>```
+>#!/bin/bash
+>#Homarus Configs
+>#sudo rm -r /opt/crayfish/Homarus/cfg
+>sudo mkdir /opt/crayfish/Homarus/cfg
+>sudo cp /mnt/hgfs/shared/Crayfish-confs/homarus.config.yaml /opt/crayfish/Homarus/cfg/config.yaml
+>#houdini Configs
+>sudo cp /mnt/hgfs/shared/Crayfish-confs/houdini.services.yaml /opt/crayfish/Houdini/config/services.yaml
+>sudo cp /mnt/hgfs/shared/Crayfish-confs/crayfish_commons.yml /opt/crayfish/Houdini/config/packages/crayfish_commons.yml
+>sudo cp /mnt/hgfs/shared/Crayfish-confs/monolog.yml /opt/crayfish/Houdini/config/packages/monolog.yml
+>sudo cp /mnt/hgfs/shared/Crayfish-confs/security.yml /opt/crayfish/Houdini/config/packages/security.yml
+>#Hypercube Configs
+>sudo mkdir /opt/crayfish/Hypercube/cfg
+>sudo cp /mnt/hgfs/shared/Crayfish-confs/hypercube.config.yaml /opt/crayfish/Hypercube/cfg/config.yaml
+>#Milliner Configs
+>sudo mkdir /opt/crayfish/Milliner/cfg/
+>sudo cp /mnt/hgfs/shared/Crayfish-confs/milliner.config.yaml /opt/crayfish/Milliner/cfg/config.yaml
+>#Recast Configs
+>sudo mkdir /opt/crayfish/Recast/cfg
+>sudo cp /mnt/hgfs/shared/Crayfish-confs/recast.config.yaml /opt/crayfish/Recast/cfg/config.yaml
+>#Permissions
+>sudo chown www-data:www-data /opt/crayfish/Homarus/cfg/config.yaml
+>sudo chmod 644 /opt/crayfish/Homarus/cfg/config.yaml
+>sudo chown www-data:www-data /opt/crayfish/Houdini/config/services.yaml
+>sudo chmod 644 /opt/crayfish/Houdini/config/services.yaml
+>sudo chown www-data:www-data /opt/crayfish/Houdini/config/packages/crayfish_commons.yml
+>sudo chmod 644 /opt/crayfish/Houdini/config/packages/crayfish_commons.yml
+>sudo chown www-data:www-data /opt/crayfish/Houdini/config/packages/monolog.yml
+>sudo chmod 644 /opt/crayfish/Houdini/config/packages/monolog.yml
+>sudo chown www-data:www-data /opt/crayfish/Houdini/config/packages/security.yml
+>sudo chmod 644 /opt/crayfish/Houdini/config/packages/security.yml
+>sudo chown www-data:www-data /opt/crayfish/Hypercube/cfg/config.yaml
+>sudo chmod 644 /opt/crayfish/Hypercube/cfg/config.yaml
+>sudo chown www-data:www-data /opt/crayfish/Recast/cfg/config.yaml
+>sudo chmod 644 /opt/crayfish/Recast/cfg/config.yaml
+>sudo chown www-data:www-data /opt/crayfish/Milliner/cfg/config.yaml
+>sudo chmod 644 /opt/crayfish/Milliner/cfg/config.yaml
+>```
 - ```sudo systemctl reload apache2```
 
 # ActiveMQ/Alpaca/Karaf/Crayfish:
