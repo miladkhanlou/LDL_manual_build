@@ -188,14 +188,14 @@ scratch_3.sh contents:
 >```
 - ***Later in the installation steps, when we create an Islandora Starter Site project, we need to edit the root directory in the Apache configuration files as shown below, We will copy over 000-default.conf and drupal.conf with updated root directories***
 
-#### 1. Edit drupal.conf:
+#### 1. Final drupal.conf root directory:
 >```
 >Alias /drupal "/opt/drupal/islandora-starter-site/web"
 >DocumentRoot "/opt/drupal/islandora-starter-site/web"
 ><Directory /opt/drupal/islandora-starter-site>
 >```
 
-#### 2. Edit 000-default.conf:
+#### 2. Final 000-default.conf root directory:
 >```
 > DocumentRoot "/opt/drupal/islandora-starter-site/web"
 > <Directory "/opt/drupal/islandora-starter-site/web">
