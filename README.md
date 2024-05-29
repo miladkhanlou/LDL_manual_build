@@ -479,7 +479,7 @@ Add this line before the closing tag:
 
 ### Redhat logging:
 >``` 
->sudo cp /mnt/hgfs/shared/conf/fedora/fcrepo-logback.xml /opt/fcrepo/config/
+>sudo cp /mnt/hgfs/shared/fcrepo-logback.xml /opt/fcrepo/config/
 >sudo chmod 644 /opt/fcrepo/config/fcrepo-logback.xml
 >sudo chown tomcat:tomcat /opt/fcrepo/config/fcrepo-logback.xml
 >```
