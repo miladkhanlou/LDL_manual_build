@@ -292,7 +292,7 @@ The following shell script will execute the commands below:
 >```
 scratch_5.sh (if the tomcat tarball link is different you must change the path in the script or run the commands in the scratch_5 alt section):
 
-- ```sh /mnt/hgfs/shared/scratch_6.sh```
+- ```sh /mnt/hgfs/shared/scratch_5.sh```
 
 - ***Copy environment variables that includes java home to tomcat/bin***
 >```
@@ -305,11 +305,20 @@ scratch_5.sh (if the tomcat tarball link is different you must change the path i
 >sudo systemctl enable tomcat
 >sudo systemctl status tomcat
 >```
-- ***NOTE: Setenv fixed and updated***
 
 ### Cantatloupe:
 - ***Install Cantaloupe 5.0.6***
-if Cantaloupe version changes, change the version number
+- ```sh /mnt/hgfs/shared/scratch_6.sh```
+
+- scratch_6.sh will perform bellow tasks:
+ - install and unzip cantaloupe 5.0.6
+
+ - copy the configurations into cantaloupe_config
+
+ - Copy cantaloupe service syetem directory
+
+ - Enables Cantaloupe
+
 >```
 >sudo wget -O /opt/cantaloupe.zip https://github.com/cantaloupe-project/cantaloupe/releases/download/v5.0.6/cantaloupe-5.0.6.zip
 >sudo unzip /opt/cantaloupe.zip
