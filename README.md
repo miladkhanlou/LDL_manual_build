@@ -307,7 +307,7 @@ scratch_5.sh (if the tomcat tarball link is different you must change the path i
 >```
 
 ### Cantatloupe:
-- ***Install Cantaloupe 5.0.6***
+#### Install Cantaloupe 5.0.6
 - ```sh /mnt/hgfs/shared/scratch_6.sh```
 
 - scratch_6.sh will perform bellow tasks:
@@ -321,21 +321,23 @@ scratch_5.sh (if the tomcat tarball link is different you must change the path i
 >sudo unzip /opt/cantaloupe.zip
 >sudo mkdir /opt/cantaloupe_config
 >```
-- ***copy the configurations into cantaloupe_config***
+#### copy the configurations into cantaloupe_config
 - ```sudo cp cantaloupe-5.0.6/cantaloupe.properties.sample /opt/cantaloupe_config/cantaloupe.properties```
 - ```sudo cp cantaloupe-5.0.6/delegates.rb.sample /opt/cantaloupe_config/delegates.rb```
 
-- ***Copy cantaloupe service syetem directory, check the version of your cantaloup in cantaloupe.service***
+#### Copy cantaloupe service syetem directory, check the version of your cantaloup in cantaloupe.service
 >```
 >sudo cp /mnt/hgfs/shared/cantaloupe.service /etc/systemd/system/cantaloupe.service
 >sudo chmod 755 /etc/systemd/system/cantaloupe.service
 >```
-- ***Enable Cantaloupe***
+
+#### Enable Cantaloupe
 >```
 >sudo systemctl enable cantaloupe
 >sudo systemctl start cantaloupe
 >sudo systemctl daemon-reload
 >```
+
 - ***Configure Cantaloupe URL(Important)***
 >```
 >sudo nano /opt/cantaloupe_config/cantaloupe.properties
