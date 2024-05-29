@@ -311,13 +311,10 @@ scratch_5.sh (if the tomcat tarball link is different you must change the path i
 - ```sh /mnt/hgfs/shared/scratch_6.sh```
 
 - scratch_6.sh will perform bellow tasks:
- - install and unzip cantaloupe 5.0.6
-
- - copy the configurations into cantaloupe_config
-
- - Copy cantaloupe service syetem directory
-
- - Enables Cantaloupe
+  - install and unzip cantaloupe 5.0.6
+  - copy the configurations into cantaloupe_config
+  - Copy cantaloupe service syetem directory
+  - Enables Cantaloupe
 
 >```
 >sudo wget -O /opt/cantaloupe.zip https://github.com/cantaloupe-project/cantaloupe/releases/download/v5.0.6/cantaloupe-5.0.6.zip
