@@ -153,14 +153,14 @@ scratch_3.sh contents:
 - ```sudo cp /mnt/hgfs/shared/ports.conf /etc/apache2/ports.conf```
 - ***Apache virtual host configuration***
 - We edit the default virtual host configuration file located in /etc/apache2/sites-available/ and /etc/apache2/sites-enabled/.
-- ```sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-enabled/000-default.conf```
-- ```sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-available/000-default.conf```
+- ```sudo cp /mnt/hgfs/shared/000-default-v1.conf /etc/apache2/sites-enabled/000-default.conf```
+- ```sudo cp /mnt/hgfs/shared/000-default-v1.conf /etc/apache2/sites-available/000-default.conf```
 - Copy command above edits the default virtual host configuration file located in /etc/apache2/sites-available/ and /etc/apache2/sites-enabled/.
 >```
 ><VirtualHost *:80>
 > ServerName localhost
-> DocumentRoot "/opt/drupal/islandora-starter-site/web"
-> <Directory "/opt/drupal/islandora-starter-site/web">
+> DocumentRoot "/opt/drupal"
+> <Directory "/opt/drupal">
 >   Options Indexes FollowSymLinks MultiViews
 >   AllowOverride all
 >   Require all granted
@@ -172,7 +172,10 @@ scratch_3.sh contents:
 >```
 >
 ***Now We create a Drupal virtual host configuration file using***
-- ```sudo nano /etc/apache2/sites-available/drupal.conf```
+- Copy over configuration from shared folder: ```sudo cp /mnt/hgfs/shared/drupal-v1.conf /etc/apache2/sites-enabled/drupal.conf```
+- Or paste following to /etc/apache2/sites-available/drupal.conf:
+
+```sudo nano /etc/apache2/sites-available/drupal.conf```
 >```
 >Alias /drupal "/opt/drupal"
 >DocumentRoot "/opt/drupal"
@@ -181,7 +184,7 @@ scratch_3.sh contents:
 >    Require all granted
 ></Directory>
 >```
-- ***Later in the installation steps, when we create an Islandora Starter Site project, we need to edit the root directory in the Apache configuration files as shown below:***
+- ***Later in the installation steps, when we create an Islandora Starter Site project, we need to edit the root directory in the Apache configuration files as shown below, We will copy over 000-default.conf and drupal.conf with updated root directories***
 
 #### 1. Edit drupal.conf:
 >```
