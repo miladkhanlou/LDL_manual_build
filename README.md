@@ -281,9 +281,11 @@ copy the TOMCAT_TARBALL_LINK as of 02-07-24 it was: https://dlcdn.apache.org/tom
 - ```sh /mnt/hgfs/shared/scratch_5.sh```
 The following shell script will execute the commands below:
 >```
+>#!/bin/bash
 >cd /opt
+>#O not 0
 >sudo mkdir tomcat
->sudo wget -O tomcat.tar.gz https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz
+>sudo wget -O tomcat.tar.gz https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.89/bin/apache-tomcat-9.0.89.tar.gz
 >sudo tar -zxvf tomcat.tar.gz
 >sudo mv /opt/apache-tomcat-9.0.85/* /opt/tomcat
 >sudo chown -R tomcat:tomcat /opt/tomcat
