@@ -468,10 +468,12 @@ check here for link: https://github.com/Islandora/Syn/releases/ copy the link (i
 - ```sudo nano /opt/tomcat/conf/context.xml```
 Add this line before the closing tag:
 >```
-><Valve className="ca.islandora.syn.valve.SynValve" pathname="/opt/fcrepo/config/syn-settings.xml"/>
+>    <Valve className="ca.islandora.syn.valve.SynValve" pathname="/opt/fcrepo/config/syn-settings.xml"/>
 ></Context>
 >```
+
 - ```sudo systemctl restart tomcat```
+
 ### Redhat logging:
 >``` 
 >sudo cp /mnt/hgfs/shared/conf/fedora/fcrepo-logback.xml /opt/fcrepo/config/
