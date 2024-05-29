@@ -372,15 +372,15 @@ sudo -u postgres psql
 fedora-config.sh contains:
 >```
 >#!/bin/bash
->sudo cp /mnt/hgfs/shared/fedora/i8_namespaces.yml /opt/fcrepo/config/
+>sudo cp /mnt/hgfs/shared/i8_namespaces.yml /opt/fcrepo/config/
 >sudo chown tomcat:tomcat /opt/fcrepo/config/i8_namespaces.yml
 >sudo chmod 644 /opt/fcrepo/config/i8_namespaces.yml
 >
->sudo cp /mnt/hgfs/shared/fedora/allowed_external_hosts.txt /opt/fcrepo/config/
+>sudo cp /mnt/hgfs/shared/allowed_external_hosts.txt /opt/fcrepo/config/
 >sudo chown tomcat:tomcat /opt/fcrepo/config/allowed_external_hosts.txt
 >sudo chmod 644 /opt/fcrepo/config/allowed_external_hosts.txt
 >
->sudo cp /mnt/hgfs/shared/fedora/fcrepo.properties /opt/fcrepo/config/
+>sudo cp /mnt/hgfs/shared/fcrepo.properties /opt/fcrepo/config/
 >sudo chown tomcat:tomcat /opt/fcrepo/config/fcrepo.properties
 >sudo chmod 640 /opt/fcrepo/config/fcrepo.properties
 >
@@ -390,7 +390,7 @@ fedora-config.sh contains:
 >sudo chmod 644 /opt/fcrepo/config/repository.json
 >
 >#fcrepo.properties
->sudo cp /mnt/hgfs/shared/fedora/fcrepo.properties /opt/fcrepo/config/ 
+>sudo cp /mnt/hgfs/shared/fcrepo.properties /opt/fcrepo/config/ 
 >sudo chown tomcat:tomcat /opt/fcrepo/config/fcrepo.properties
 >sudo chmod 644 /opt/fcrepo/config/fcrepo.properties 
 >```
@@ -586,10 +586,10 @@ run following as root to extract and install solr:
 
 - ```sudo mkdir -p /var/solr/data/islandora8```
 - ```sudo mkdir -p /var/solr/data/islandora8/conf```
-- ```cp /mnt/shared/solr_9.x_config/* /var/solr/data/islandora10/conf/```
+- ```cp /mnt/shared/solr_9.x_config/* /var/solr/data/islandora8/conf/```
 - ```sudo chown -R solr:solr /var/solr```
 - ```cd /opt/solr```
-- ```sudo -u solr bin/solr create -c islandora10 -p 8983```
+- ```sudo -u solr bin/solr create -c islandora8 -p 8983```
 **We will configure index via gui after site installed***
 
 # Crayfish microservices
@@ -618,7 +618,7 @@ It's running the following:
 - ```sudo chown www-data:www-data /var/log/islandora```
 
 #### moving config files over:
-- ```sh /mnt/hgfs/shared/conf/Crayfish-confs/microservices-config.sh```
+- ```sh /mnt/hgfs/shared/microservices-config.sh```
 
 Folowing command will move Crayfish Microservices Config files and Apache Config files over.
 >```
@@ -627,20 +627,25 @@ Folowing command will move Crayfish Microservices Config files and Apache Config
 >#sudo rm -r /opt/crayfish/Homarus/cfg
 >sudo mkdir /opt/crayfish/Homarus/cfg
 >sudo cp /mnt/hgfs/shared/Crayfish-confs/homarus.config.yaml /opt/crayfish/Homarus/cfg/config.yaml
+>
 >#houdini Configs
 >sudo cp /mnt/hgfs/shared/Crayfish-confs/houdini.services.yaml /opt/crayfish/Houdini/config/services.yaml
 >sudo cp /mnt/hgfs/shared/Crayfish-confs/crayfish_commons.yml /opt/crayfish/Houdini/config/packages/crayfish_commons.yml
 >sudo cp /mnt/hgfs/shared/Crayfish-confs/monolog.yml /opt/crayfish/Houdini/config/packages/monolog.yml
 >sudo cp /mnt/hgfs/shared/Crayfish-confs/security.yml /opt/crayfish/Houdini/config/packages/security.yml
 >#Hypercube Configs
+>
 >sudo mkdir /opt/crayfish/Hypercube/cfg
 >sudo cp /mnt/hgfs/shared/Crayfish-confs/hypercube.config.yaml /opt/crayfish/Hypercube/cfg/config.yaml
+>
 >#Milliner Configs
 >sudo mkdir /opt/crayfish/Milliner/cfg/
 >sudo cp /mnt/hgfs/shared/Crayfish-confs/milliner.config.yaml /opt/crayfish/Milliner/cfg/config.yaml
+>
 >#Recast Configs
 >sudo mkdir /opt/crayfish/Recast/cfg
 >sudo cp /mnt/hgfs/shared/Crayfish-confs/recast.config.yaml /opt/crayfish/Recast/cfg/config.yaml
+>
 >#Permissions
 >sudo chown www-data:www-data /opt/crayfish/Homarus/cfg/config.yaml
 >sudo chmod 644 /opt/crayfish/Homarus/cfg/config.yaml
@@ -743,7 +748,7 @@ Check Alpaca installation in offial Islandora Github:
 >```
 >$settings['trusted_host_patterns'] = [
 >  'localhost',
->  'YOUR_IP',
+>  'YOUR_IP_ADDRESS',
 >];
 >
 >$settings['flysystem'] = [
@@ -755,28 +760,30 @@ Check Alpaca installation in offial Islandora Github:
 >  ],
 >];
 >```
-#### Fix Apache configurations root directories:
-- Fix path in apache **000.default.conf** and drupal.conf to **/opt/drupal/islandora-starter-site/web**, in **site-available** and **site-enabled**:
-#### 1. Edit drupal.conf:
-```sudo nano /etc/apache2/sites-available/drupal.conf```
 
-Bellow is the lines that need to be set to in drupal.conf.
+#### Re-configure Apache root directories:
+#### 1. Re-configure drupal.conf:
+- ```sudo cp /mnt/hgfs/shared/drupal.conf /etc/apache2/sites-enabled/drupal.conf```
+
+- **Bellow is the lines that Changed in Apache configuration:**
 >```
 >Alias /drupal "/opt/drupal/islandora-starter-site/web"
 >DocumentRoot "/opt/drupal/islandora-starter-site/web"
 ><Directory /opt/drupal/islandora-starter-site>
 >```
 
-#### 2. Edit 000-default.conf:
-sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-enabled/000-default.conf
-sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-available/000-default.conf
-Bellow is the lines that need to be set to in 000-default.conf.
+#### 2. Re-configure 000-default.conf:
+- ```sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-enabled/000-default.conf```
+- ```sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-available/000-default.conf```
+
+- **Bellow is the lines that Changed in Apache configuration:**
 >```
 > DocumentRoot "/opt/drupal/islandora-starter-site/web"
 > <Directory "/opt/drupal/islandora-starter-site/web">
 >```
 
-Then restart apache2 ```sudo systemctl restart apache2```
+#### Then restart apache:
+- ```sudo systemctl restart apache2```
 
 #### change permission on the web directory:
 - ```sudo chown -R www-data:www-data /opt/drupal/islandora-starter-site/web```
@@ -969,14 +976,14 @@ Navigate to ```configuration -> access controll -> islandora access and select i
 mimic_implicite for postgresql error occures while creating new content, After groupmedia module installaion, causes the content not to be created in postgresql database
 
 #### Copy the fixed postgresql edited php files over:
-- ```sudo cp /mnt/hgfs/shared/conf/postgreSQL/pgsql-drivers/core-module-pgsql-src-Driver/Connection.php /opt/drupal/islandora-starter-site/web/core/modules/pgsql/src/Driver/Database/pgsql/```
-- ```sudo cp /mnt/hgfs/shared/conf/postgreSQL/pgsql-drivers/core-module-pgsql-src-Driver/Select.php /opt/drupal/islandora-starter-site/web/core/modules/pgsql/src/Driver/Database/pgsql/```
+- ```sudo cp /mnt/hgfs/shared/postgres-core-module-src-driver/Connection.php /opt/drupal/islandora-starter-site/web/core/modules/pgsql/src/Driver/Database/pgsql/```
+- ```sudo cp /mnt/hgfs/shared/postgres-core-module-src-driver/Select.php /opt/drupal/islandora-starter-site/web/core/modules/pgsql/src/Driver/Database/pgsql/```
 - ```drush cr```
 - ```sudo systemctl daemon-reload```
 - ```sudo systemctl restart apache2 postgresql```
 - ```sudo systemctl status apache2 postgresql```
 
-# Configure default Flysystem
+# Configure default Flysystem (Need to be decided later)
 
 # Run workbench ingest:
 - after running our transformation tools, we now run the workbench to ingest our content to the server:
