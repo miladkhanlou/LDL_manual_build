@@ -385,7 +385,7 @@ fedora-config.sh contains:
 >sudo chown tomcat:tomcat /opt/fcrepo/config/fcrepo.properties
 >sudo chmod 640 /opt/fcrepo/config/fcrepo.properties
 >
->#extra from our build instructions
+>#From our old build instructions
 >sudo cp /mnt/hgfs/shared/repository.json /opt/fcrepo/config/repository.json
 >sudo chown tomcat:tomcat /opt/fcrepo/config/repository.json
 >sudo chmod 644 /opt/fcrepo/config/repository.json
@@ -396,7 +396,7 @@ fedora-config.sh contains:
 >sudo chmod 644 /opt/fcrepo/config/fcrepo.properties 
 >```
 
-- double check /opt/fcrepo/config/allowed_hosts.txt got created
+- double check /opt/fcrepo/config/allowed_hosts.txt got created and listens to port 8000
 - ```cp /mnt/hgfs/shared/allowed_hosts.txt /opt/fcrepo/config/allowed_hosts.txt```
 
 ### Adding the Fedora Variables to JAVA_OPTS, change setenv:
