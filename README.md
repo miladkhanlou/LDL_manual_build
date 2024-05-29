@@ -368,7 +368,6 @@ sudo -u postgres psql
 
 - ***Adding fedora configurations:***
 - ```sudo sh /mnt/hgfs/shared/fedora-config.sh```
-- ***NOTE: fedora-config.sh updated! fcrepo.properties was not added and configured, there are undefined values!***
 
 fedora-config.sh contains:
 >```
