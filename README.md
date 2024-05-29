@@ -82,7 +82,7 @@ the above command runs the following script the :
 
 Edit the postgresql.conf file starting at line 687
 
-- ```sudo nano +687 /etc/postgresql/14/main/postgresql.conf```
+- ```sudo nano +687 /etc/postgresql/15/main/postgresql.conf```
 
 change line 687 from 
 >```
