@@ -278,7 +278,7 @@ type y for yes
 find the tar.gz here: https://tomcat.apache.org/download-90.cgi
 copy the TOMCAT_TARBALL_LINK as of 09-06-23 it was: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.80/bin/apache-tomcat-9.0.80.tar.gz
 copy the TOMCAT_TARBALL_LINK as of 02-07-24 it was: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz
-- ```sh /mnt/hgfs/shared/scratch_5.sh```
+- ```sh /mnt/hgfs/shared/scratch_4.sh```
 The following shell script will execute the commands below:
 >```
 >#!/bin/bash
