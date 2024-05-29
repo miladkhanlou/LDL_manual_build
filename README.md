@@ -393,18 +393,16 @@ fedora-config.sh contains:
 >```
 
 - double check /opt/fcrepo/config/allowed_hosts.txt got created
-```cat /opt/fcrepo/config/allowed_hosts.txt```
-- ***NOTE: Setenv fixed and updated***
+- ```cp /mnt/hgfs/shared/allowed_hosts.txt /opt/fcrepo/config/allowed_hosts.txt```
 
-- ***Adding the Fedora Variables to JAVA_OPTS, change setenv:***
-```sudo nano /opt/tomcat/bin/setenv.sh```
+### Adding the Fedora Variables to JAVA_OPTS, change setenv:
+- ```sudo nano /opt/tomcat/bin/setenv.sh```
 
-uncomment line 5, comment line 4 (CTL-c) shows line number
-save (CTL-o) exit (CTL+x)
+- uncomment line 5, comment line 4 (CTL-c) shows line number
 
 - ```sudo chown tomcat:tomcat /opt/tomcat/bin/setenv.sh```
 
-- ***Edit and Ensuring Tomcat Users Are In Place***
+### Edit and Ensuring Tomcat Users Are In Place
 Add following to xml after version="1.0" in <tomcat-users>:
 - ``sudo nano /opt/tomcat/conf/tomcat-users.xml``
 >```
@@ -415,7 +413,8 @@ Add following to xml after version="1.0" in <tomcat-users>:
 >  <user username="fedoraAdmin" password="FEDORA_ADMIN_PASSWORD" roles="fedoraAdmin"/>
 >  <user username="fedoraUser" password="FEDORA_USER_PASSWORD" roles="fedoraUser"/>
 >```
-- ***tomcat users permissions:***
+
+### tomcat users permissions:
 >```
 >sudo chmod 600 /opt/tomcat/conf/tomcat-users.xml
 >sudo chown tomcat:tomcat /opt/tomcat/conf/tomcat-users.xml
@@ -426,7 +425,8 @@ Add following to xml after version="1.0" in <tomcat-users>:
 The following shell script will execute the commands below
 >```
 >#!/bin/bash
->sudo wget -O fcrepo.war https://github.com/fcrepo/fcrepo/releases/download/fcrepo-6.4.0/fcrepo-webapp-6.4.0.war
+>#sudo wget -O fcrepo.war https://github.com/fcrepo/fcrepo/releases/download/fcrepo-6.4.1/fcrepo-webapp-6.4.1.war
+>sudo wget -O fcrepo.war https://github.com/fcrepo/fcrepo/releases/download/fcrepo-6.5.0/fcrepo-webapp-6.5.0.war
 >sudo mv fcrepo.war /opt/tomcat/webapps
 >sudo chown tomcat:tomcat /opt/tomcat/webapps/fcrepo.war
 >sudo systemctl restart tomcat
@@ -447,9 +447,11 @@ check here for link: https://github.com/Islandora/Syn/releases/ copy the link (i
 >sudo chown -R tomcat:tomcat /opt/tomcat/lib
 >sudo chmod -R 640 /opt/tomcat/lib
 >```
+
 ### Generating an SSL Key for Syn and Placing the Syn Settings:
 - ```sudo sh /mnt/hgfs/shared/syn-config.sh```
-The following shell script will execute the commands below:
+- The following shell script will execute the commands below:
+
 >```
 >#!/bin/bash
 >sudo mkdir /opt/keys
@@ -461,6 +463,7 @@ The following shell script will execute the commands below:
 >sudo chown tomcat:tomcat /opt/fcrepo/config/syn-settings.xml
 >sudo chmod 600 /opt/fcrepo/config/syn-settings.xml
 >```
+
 ### Adding the Syn Valve to Tomcat | Enable the Syn Valve for all of Tomcat:
 - ```sudo nano /opt/tomcat/conf/context.xml```
 Add this line before the closing tag:
