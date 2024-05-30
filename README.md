@@ -48,11 +48,12 @@ These commands should all be executed in sequence from within the vmware CLI:
 
 - ```ls /mnt/hgfs/shared```
 - you should see the shared folders from LSU OneDrive. if you don't see the shared folder, run this command in the vmware cli:
-- if bad mount point '/mnt/hgfs/' no such file or directory
+
+### If bad mount point '/mnt/hgfs/' no such file or directory:
 - ```mkdir /mnt/hgfs/``` 
 - ```sudo vmhgfs-fuse .host:/ /mnt/hgfs/ -o allow_other -o uid=1000```
 
-
+## Start the build:
 - execute in the vmware cli after shared folders are connected:
 - ```sh /mnt/hgfs/shared/scratch_1.sh```
 the above command runs a script containing the following:
@@ -66,6 +67,7 @@ the above command runs a script containing the following:
  
 # Install php and postgresql:
 - ```sh /mnt/hgfs/shared/scratch_2.sh```
+
 the above command runs the following script the :
 >```
 >#!/bin/bash
@@ -104,26 +106,27 @@ from within the postgres cli change to drupal10:
 >```
 >create database drupal10 encoding 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0;
 >create user drupal with encrypted password 'drupal';
->/q
 >```
 
 ***Grant privileges, Enable extension,Modify database setting***
 - ```sudo -u postgres psql```
->/c drupal10
+>```
+>\c drupal10
 >GRANT ALL PRIVILEGES ON DATABASE drupal10 TO drupal;
 >GRANT CREATE ON SCHEMA public TO drupal;
 >CREATE EXTENSION pg_trgm;
->\q
+>```
 
 - ***Modify database setting***
 >```
->ALTER DATABASE drupal10;
+>ALTER DATABASE drupal10
 >SET bytea_output = 'escape';
 >\q
 >```
 - ```sudo systemctl restart postgresql```
 - ***Editing pg_hba.conf for User Authentication in PostgreSQL***
->cp /mnt/hgfs/shared/pg_hba.conf /etc/postgresql/15/main/
+
+```cp /mnt/hgfs/shared/pg_hba.conf /etc/postgresql/15/main/```
 - Adds the following authentication settings for PostgreSQL users and databases on localhost. Note: Do not copy the configurations below into the pg_hba.conf file, as the indentations are incorrect.
 >```
 ># Database administrative login by Unix domain socket
@@ -152,9 +155,8 @@ scratch_3.sh contents:
 # Configure apache server settings:
 - ```sudo cp /mnt/hgfs/shared/ports.conf /etc/apache2/ports.conf```
 - ***Apache virtual host configuration***
-- We edit the default virtual host configuration file located in /etc/apache2/sites-available/ and /etc/apache2/sites-enabled/.
-- ```sudo cp /mnt/hgfs/shared/000-default-v1.conf /etc/apache2/sites-enabled/000-default.conf```
-- ```sudo cp /mnt/hgfs/shared/000-default-v1.conf /etc/apache2/sites-available/000-default.conf```
+  - ```sudo cp /mnt/hgfs/shared/000-default-v1.conf /etc/apache2/sites-enabled/000-default.conf```
+  - ```sudo cp /mnt/hgfs/shared/000-default-v1.conf /etc/apache2/sites-available/000-default.conf```
 - Copy command above edits the default virtual host configuration file located in /etc/apache2/sites-available/ and /etc/apache2/sites-enabled/.
 >```
 ><VirtualHost *:80>
@@ -174,7 +176,7 @@ scratch_3.sh contents:
 ***Now We create a Drupal virtual host configuration file using***
 - Copy over configuration from shared folder:
 
- - ```sudo cp /mnt/hgfs/shared/drupal-v1.conf /etc/apache2/sites-enabled/drupal.conf```
+ - ```sudo cp /mnt/hgfs/shared/drupal-v1.conf /etc/apache2/sites-available/drupal.conf```
 - Or paste following to /etc/apache2/sites-available/drupal.conf:
 
 ```sudo nano /etc/apache2/sites-available/drupal.conf```
@@ -188,18 +190,6 @@ scratch_3.sh contents:
 >```
 - ***Later in the installation steps, when we create an Islandora Starter Site project, we need to edit the root directory in the Apache configuration files as shown below, We will copy over 000-default.conf and drupal.conf with updated root directories***
 
-#### 1. Final drupal.conf root directory:
->```
->Alias /drupal "/opt/drupal/islandora-starter-site/web"
->DocumentRoot "/opt/drupal/islandora-starter-site/web"
-><Directory /opt/drupal/islandora-starter-site>
->```
-
-#### 2. Final 000-default.conf root directory:
->```
-> DocumentRoot "/opt/drupal/islandora-starter-site/web"
-> <Directory "/opt/drupal/islandora-starter-site/web">
->```
 
 #### Configuring and Securing Apache for Drupal Deployment
 - ```sudo systemctl restart apache2``` 
@@ -275,10 +265,9 @@ press enter for all default user prompts
 type y for yes
 
 - ***install tomcat***
-find the tar.gz here: https://tomcat.apache.org/download-90.cgi
-copy the TOMCAT_TARBALL_LINK as of 09-06-23 it was: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.80/bin/apache-tomcat-9.0.80.tar.gz
-copy the TOMCAT_TARBALL_LINK as of 02-07-24 it was: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz
+- find the tar.gz here: https://tomcat.apache.org/download-90.cgi
 - ```sh /mnt/hgfs/shared/scratch_4.sh```
+
 The following shell script will execute the commands below:
 >```
 >#!/bin/bash
@@ -287,9 +276,11 @@ The following shell script will execute the commands below:
 >sudo mkdir tomcat
 >sudo wget -O tomcat.tar.gz https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.89/bin/apache-tomcat-9.0.89.tar.gz
 >sudo tar -zxvf tomcat.tar.gz
->sudo mv /opt/apache-tomcat-9.0.85/* /opt/tomcat
+>sudo mv /opt/apache-tomcat-9.0.89/* /opt/tomcat
 >sudo chown -R tomcat:tomcat /opt/tomcat
 >```
+- Make sure to change the tomcat version in scrathc_4 in ```sudo mv /opt/apache-tomcat-9.0.89/* /opt/tomcat```
+
 scratch_5.sh (if the tomcat tarball link is different you must change the path in the script or run the commands in the scratch_5 alt section):
 
 - ```sh /mnt/hgfs/shared/scratch_5.sh```
@@ -469,10 +460,9 @@ check here for link: https://github.com/Islandora/Syn/releases/ copy the link (i
 
 ### Adding the Syn Valve to Tomcat | Enable the Syn Valve for all of Tomcat:
 - ```sudo nano /opt/tomcat/conf/context.xml```
-Add this line before the closing tag:
+Add this line before the closing Context (</context>):
 >```
 >    <Valve className="ca.islandora.syn.valve.SynValve" pathname="/opt/fcrepo/config/syn-settings.xml"/>
-></Context>
 >```
 
 - ```sudo systemctl restart tomcat```
@@ -552,15 +542,15 @@ If this worked correctly, Blazegraph should respond with some XML letting us kno
 - ```source ~/.bashrc```
 
 #### download 9.x solr:
+```sh /mnt/hgfs/shared/solr-dl.sh```
 >```
 >cd /opt
 >sudo wget https://www.apache.org/dyn/closer.lua/solr/solr/9.6.0/solr-9.6.0.tgz?action=download
->sudo mv solr-9.6.0.tgz?action=download solr-9.6.0.tgz```
+>sudo mv solr-9.6.0.tgz?action=download solr-9.6.0.tgz
 >sudo tar xzf solr-9.6.0.tgz solr-9.6.0/bin/install_solr_service.sh --strip-components=2
 >```
 #### Install Solr:
 run following as root to extract and install solr:
-
 - ```sudo bash ./install_solr_service.sh solr-9.6.0.tgz -i /opt -d /var/solr -u solr -s solr -p 8983```
 
 ##### Runnig the above command will do the following:
@@ -582,15 +572,25 @@ run following as root to extract and install solr:
 - ```sudo echo "fs.file-max = 65535" >> /etc/sysctl.conf```
 - ```sudo sysctl -p```
 
+#### make sure solr is running:
+- ```sudo systemctl status solr```
+
+- **If it was not running:**
+  - ```cd /opt/solr-9.6.0```
+  - ```bin/solr start```
+
+- ```sudo systemctl status solr```
 #### Create Solr Core
 
 - ```sudo mkdir -p /var/solr/data/islandora8```
 - ```sudo mkdir -p /var/solr/data/islandora8/conf```
-- ```cp /mnt/shared/solr_9.x_config/* /var/solr/data/islandora8/conf/```
+- ```cp /mnt/hgfs/shared/solr_9.x_config/* /var/solr/data/islandora8/conf/```
 - ```sudo chown -R solr:solr /var/solr```
-- ```cd /opt/solr```
+- ```cd /opt/solr-9.6.0```
 - ```sudo -u solr bin/solr create -c islandora8 -p 8983```
-**We will configure index via gui after site installed***
+
+***We will configure index via gui after site installed***
+
 
 # Crayfish microservices
 #### Adding this PPA to your system:
@@ -703,7 +703,7 @@ Folowing command will move Crayfish Microservices Config files and Apache Config
 #### Set manual ActiveMQ as default ActiveMQ:
 add activemq bin directory to default environment variable:
 >```
->sudo ~/.bashrc
+>sudo nano ~/.bashrc
 >export PATH=$PATH:/usr/share/activemq/bin
 >source ~/.bashrc
 >```
@@ -716,7 +716,8 @@ add activemq bin directory to default environment variable:
 #### ActiveMQ ConfigurationL(Important)
 ActiveMQ expected to be listening for STOMP messages at a tcp url. If not the default tcp://127.0.0.1:61613, this will have to be set:
 - ```sudo nano /usr/share/activemq/conf/activemq.xml```
-- Inside the <transportConnectors> element, find the configuration for the STOMP transport connector and change the stomp url to 127.0.0.1:61613
+- Inside the <transportConnectors> element, find the configuration for the STOMP transport connector and change the stomp url from 0.0.0.0 to 127.0.0.1:61613
+- Keep the port and the rest.
 - ```name="stomp" uri="stomp://127.0.0.1:61613"```
 
 # 2. Karaf 
@@ -731,7 +732,8 @@ Check Alpaca installation in offial Islandora Github:
 #### install php-intl 8.3:
 ```sudo apt-get install php8.3-intl```
 
-#### create islandora starter site project(Check with dockerized to see if we need latest version maybe?)
+#### create islandora starter site project
+
 - ```cd /opt/drupal```
 - ```sudo composer create-project islandora/islandora-starter-site:1.8.0```
 - ```cd /opt/drupal/islandora-starter-site```
@@ -765,7 +767,7 @@ Check Alpaca installation in offial Islandora Github:
 #### 1. Re-configure drupal.conf:
 - ```sudo cp /mnt/hgfs/shared/drupal.conf /etc/apache2/sites-enabled/drupal.conf```
 
-- **Bellow is the lines that Changed in Apache configuration:**
+- **Bellow is the lines that Changed in drupal.conf Apache configuration:**
 >```
 >Alias /drupal "/opt/drupal/islandora-starter-site/web"
 >DocumentRoot "/opt/drupal/islandora-starter-site/web"
@@ -776,7 +778,7 @@ Check Alpaca installation in offial Islandora Github:
 - ```sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-enabled/000-default.conf```
 - ```sudo cp /mnt/hgfs/shared/000-default.conf /etc/apache2/sites-available/000-default.conf```
 
-- **Bellow is the lines that Changed in Apache configuration:**
+- **Bellow is the lines that Changed in 000-default.conf Apache configuration:**
 >```
 > DocumentRoot "/opt/drupal/islandora-starter-site/web"
 > <Directory "/opt/drupal/islandora-starter-site/web">
@@ -795,10 +797,11 @@ Check Alpaca installation in offial Islandora Github:
 
 # Install the site using composer or drush:
 - **1. install using Composer:**
-  - ```composer exec -- drush site:install --existing-config```
+  - ```sudo composer exec -- drush site:install --existing-config```
  
 - **2. Install with Drush:**
   - ```sudo -u www-data drush site-install --existing-config --db-url="pgsql://drupal:drupal@127.0.0.1:5432/drupal10"```
+
 #### Change default username and password:
 - ```sudo drush upwd admin admin```
 
@@ -818,7 +821,7 @@ Some, we already configured in prerequsits, but we will make sure all the config
 #### Check following configurations before moving forward:
 - check if your services like cantaloupe, apache, tomcat, databases are available and working
 - check if you have already configured the cantaloup IIIF base URL to http://127.0.0.1:8182/iiif/2
-- check if you have already configured activemq.xml in name="stomp" uri="tcp://127.0.0.1:61613"
+- check if you have already configured activemq.xml in name="stomp" uri="stomp://127.0.0.1:61613"
 
 #### solr search_api installation and fiele size:
 - ```sudo -u www-data composer require drupal/search_api_solr```
@@ -896,11 +899,11 @@ Some, we already configured in prerequsits, but we will make sure all the config
 #### Select default Flysystem:
 visit /admin/config/media/file-system to select the flysystem from the dropdown.
 
-
 # Run the migrations command and Enabling EVA Views:
 run the migration tagged with islandora  to populate some taxonomies.
 
 #### Run the migrations taged with islandora:
+- ```cd /opt/drupal/islandora-starter-site```
 - ```composer exec -- drush migrate:import --userid=1 --tag=islandora```
 
 #### Enabling EVA Views:
@@ -910,52 +913,70 @@ run the migration tagged with islandora  to populate some taxonomies.
 - ```cd /opt/drupal/islandora-starter-site```
 - ```sudo -u www-data composer require digitalutsc/islandora_group```
 - ```sudo -u www-data composer require 'drupal/rules:^3.0@alpha'```
-- ```drush en -y islandora_group gnode```
+- ```drush en -y islandora_group gnode rules```
 #### Rebuild Cache:
 - ```drush cr```
 
 # Group Configuration:
 #### group type:
-- set available content and install group media and group media image and all:
-
-Navigate to ```configuration -> access controll -> islandora access and select islandora_access```
-
-#### create a group:
-- Navigate to ```structure -> content types -> repository item -> manage fields -> create a access terms -> type is Reference -> Reference type: Taxonomy term, Vocabulary: Islandora Access```
-
-#### Media type:
-- Navigate to ```structure -> mediatypes -> edit one of the media types -> edit -> manage fields -> create a field -> create a access terms -> type is Reference -> Reference type = Islandora Access```
-
-#### Media types Access term:
-- for each media type we need to have access terms so we re use the one we created
-
-Navigate to ```configuration -> access controll -> islandora access and select islandora_access -> select islandora_access```
+- Navigate to Groups -> create a group type
 
 #### Groups role and group role permissions:
-- Groups must be created with the Administrator role, insider and ousider, and individual user. 
-  - If not, the groups created will not be hidden from the administrator account. 
-- If you find yourself unable to delete a group type due to hidden groups 
-   - Edit the Roles under the group type and creat an Outsider Administrator Role that can see and delete individual groups 
+- **Create specific roles:**
+  - For administratiopn access create Admin, Admin Outside, and Admin Inside. Ensure each role has the appropriate admin permissions.
+
+  - You can also create different roles for members, content creators, or other specific roles, and assign these roles to specific users.
+
+- **Edit Group Type:**
+  - Go back to your Group type, and assign the individual admin role you created to that group type.
+
+- **Assign role to the user**:
+  - In Drupal, navigate to Admin > People to manage user roles:
+
+    - Assign the administrator role to your user.
+
+    - You can also assign users as content creators for specific group types. This way, they will only have access to the group types and groups they are assigned to, and will not have access to other group types or groups within those types.
+
+#### Set islandora access in access controllL 
+- Navigate to ```configuration -> access controll -> islandora access and select islandora_access```
+
+#### Create islandora access field for islandora Content type:
+- Navigate to ```structure -> content types -> repository item -> manage fields -> create a access terms -> type is Reference -> Reference type: Taxonomy term, Vocabulary: Islandora Access```
+
+#### Create islandora access field for each Media types :
+- Navigate to ```structure -> mediatypes -> edit one of the media types -> edit -> manage fields -> create a field -> create a access terms -> type is Reference -> Reference type = Islandora Access```
+
+- For each media type, we need to have field access terms. We can reuse the access terms we have already created.
+
+#### Select islandora access for each nodes and media:
+- Navigate to ```configuration -> access controll -> islandora access```
+
+- Select islandora_access for the repository items content type and all media types.
+
 
 #### Fix the destination for each media type (Important for media ingestion for each media types):
 - Navigate ```Structure>Media types```
  
-- for each media type edit the field that type is file and set Upload destination to the Public files instead of fedora:
+- For each media type, edit the field where the type is file and set the Upload destination to Public files (for fedora-less system)
    - Example: for audio: field_media_audio_file
-   - Except image, and specifically, field_media_image that file type is image
 
-- Ensure you have set maxiumum file size
-   - we can do it at this point if where we're editing each mediaTypes 
-   - might be doable in settings.php, when we setting flysystem to fedora
-   - might any settings that we define the destination such as apache php.ini
+#### Ensure you have set maxiumum file size
+- **upload size and max post size:**
+  - ```sudo nano /etc/php/8.3/apache2/php.ini```
+  - ```change post_max_size = 8M to post_max_size = 200M```
+  - ```change upload_max_filesize = 8M to upload_max_filesize = 200M```
+  - ```change max_file_uploads = 200 to an appropriate number (1000?)```
 
-- restart apache and tomcat, daemon-reload, cache rebuild
+#### restart apache and tomcat, daemon-reload, cache rebuild
+    - ```sudo systemctl restart apache2 tomcat```
+    - ```sudo systemctl daemon-reload```
+    - ```drush cr```
 
 # re-islandora Workbench to be on V1.0.0:
 #### Remove dev version and install V1 cause dev version is not determined by workbench anymore:
+```cd /opt/drupal/islandora-starter-site```
 - remove mjordan/islandora_workbench_integration from composer.json and update composer
-
-```composer update```
+```sudo composer update```
 
 #### Re-install and enable(Running command bellow will get V1 ) 
 - ```sudo -u www-data composer require mjordan/islandora_workbench_integration```
@@ -972,8 +993,8 @@ Navigate to ```configuration -> access controll -> islandora access and select i
 - ```sudo nano /etc/php/8.3/apache2/php.ini```
 - ```max_file_uploads = ???```
 
-# Fix postgresql mimic_implicite error fix after islandora_group, islandora workbench installation:
-mimic_implicite for postgresql error occures while creating new content, After groupmedia module installaion, causes the content not to be created in postgresql database
+# Fix postgresql mimic_implicite error:
+mimic_implicite for postgresql error occures while creating new content, After groupmedia module installaion, causes the content not to be created in postgresql database. here are steps to resolve it:
 
 #### Copy the fixed postgresql edited php files over:
 - ```sudo cp /mnt/hgfs/shared/postgres-core-module-src-driver/Connection.php /opt/drupal/islandora-starter-site/web/core/modules/pgsql/src/Driver/Database/pgsql/```
@@ -983,9 +1004,47 @@ mimic_implicite for postgresql error occures while creating new content, After g
 - ```sudo systemctl restart apache2 postgresql```
 - ```sudo systemctl status apache2 postgresql```
 
-# Configure default Flysystem (Need to be decided later)
+# Configure default Flysystem:
+Need to be decided later
 
 # Run workbench ingest:
-- after running our transformation tools, we now run the workbench to ingest our content to the server:
+After running our transformation tools, we are ready to ingest the data. To do this, follow the steps below:
+
+### 1. Create custom fields:
+Because we have custom fields that are not part of the default Drupal fields in the database tables, Workbench will throw an error stating "Headers require a matching Drupal fields name." Therefore, we need to create them using any of the methods below:
+
+- **On GUI (Slow process, not recommended):**
+  - Navigate to structure>Content types> Repository items> manage fields> add field
+ 
+- **Batch ingest fields with json configuration scrips:**
+  - **Install the field_create Module:** 
+
+    - ```sudo -u www-data composer require 'drupal/field_create:^1.0'```
+
+  - **Enable modules:** ```drush en field_create field_create_from_json```
+
+  - **Create a JSON configuration script to define fields with specific data types:**
+
+  - **Create fields:**
+     - Navigate to configurations>delvelopment>add fields programmatically> under Content dropdown> copy json configuration for creating fields> Click save Configuration
+     - Then select node from dropdown > Click Create fields now
+     - Json format for creating fields with different data types:
+  - **Example JSON syntax for creating fields:**
+```json
+{
+ "field_name": { # Machine name of the field
+   "name": "field_name", #Machine name of the field
+   "label": "field name", #Enter name of the field without '_' as a field lable name
+   "type": "text", # type of the field can be assigned in "type"
+   "force": true,
+   "bundles": {
+     "islandora_object": { #islandora content type
+       "label": "islandora object" #description for islandora content type
+     }
+   }
+ }
+}
+```
+### 2. now run the workbench to ingest our content to the server:
    - ```cd islandora_workbench```
    - ```./workbench --config LDLingest.yml```
