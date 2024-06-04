@@ -368,8 +368,8 @@ fedora-config.sh contains:
 >sudo chmod 644 /opt/fcrepo/config/i8_namespaces.yml
 >
 >sudo cp /mnt/hgfs/shared/allowed_external_hosts.txt /opt/fcrepo/config/
->sudo chown tomcat:tomcat /opt/fcrepo/config/allowed_external_hosts.txt
->sudo chmod 644 /opt/fcrepo/config/allowed_external_hosts.txt
+>sudo chown tomcat:tomcat /opt/fcrepo/config/allowed_hosts.txt
+>sudo chmod 644 /opt/fcrepo/config/allowed_hosts.txt
 >
 >sudo cp /mnt/hgfs/shared/fcrepo.properties /opt/fcrepo/config/
 >sudo chown tomcat:tomcat /opt/fcrepo/config/fcrepo.properties
@@ -397,8 +397,8 @@ fedora-config.sh contains:
 - ```sudo chown tomcat:tomcat /opt/tomcat/bin/setenv.sh```
 
 ### Edit and Ensuring Tomcat Users Are In Place
-Add following to xml after version="1.0" in <tomcat-users>:
-- ``sudo nano /opt/tomcat/conf/tomcat-users.xml``
+- Add following to xml after version="1.0" in <tomcat-users>:
+  - ``sudo nano /opt/tomcat/conf/tomcat-users.xml``
 >```
 >  <role rolename="tomcat"/>
 >  <role rolename="fedoraAdmin"/>
@@ -407,7 +407,7 @@ Add following to xml after version="1.0" in <tomcat-users>:
 >  <user username="fedoraAdmin" password="FEDORA_ADMIN_PASSWORD" roles="fedoraAdmin"/>
 >  <user username="fedoraUser" password="FEDORA_USER_PASSWORD" roles="fedoraUser"/>
 >```
-
+- Or ```cp /mnt/hgfs/shared/tomcat-users.xml /opt/tomcat/conf/```
 ### tomcat users permissions:
 >```
 >sudo chmod 600 /opt/tomcat/conf/tomcat-users.xml
@@ -423,7 +423,7 @@ The following shell script will execute the commands below
 >sudo wget -O fcrepo.war https://github.com/fcrepo/fcrepo/releases/download/fcrepo-6.5.0/fcrepo-webapp-6.5.0.war
 >sudo mv fcrepo.war /opt/tomcat/webapps
 >sudo chown tomcat:tomcat /opt/tomcat/webapps/fcrepo.war
->sudo systemctl restart tomcat
+>sudo systemctl start tomcat
 >```
 
 you may want to check
@@ -460,7 +460,8 @@ check here for link: https://github.com/Islandora/Syn/releases/ copy the link (i
 
 ### Adding the Syn Valve to Tomcat | Enable the Syn Valve for all of Tomcat:
 - ```sudo nano /opt/tomcat/conf/context.xml```
-Add this line before the closing Context (</context>):
+
+- Then add this line before the closing Context (</context>):
 >```
 >    <Valve className="ca.islandora.syn.valve.SynValve" pathname="/opt/fcrepo/config/syn-settings.xml"/>
 >```
@@ -522,7 +523,10 @@ Comment line 6 and uncomment line 7:
 
 - **Before:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -DconnectionTimeout=-1 -server -Xmx1500m -Xms1000m"
 - **After:** export JAVA_OPTS="-Djava.awt.headless=true -Dfcrepo.config.file=/opt/fcrepo/config/fcrepo.properties -Dlogback.configurationFile=/opt/fcrepo/config/fcrepo-logback.xml -DconnectionTimeout=-1 Dcom.bigdata.rdf.sail.webapp.ConfigParams.propertyFile=/opt/blazegraph/conf/RWStore.properties -Dlog4j.configuration=file:/opt/blazegraph/conf/log4j.properties -server -Xmx1500m -Xms1000m"
-- sudo systemctl restart tomcat
+
+- Comment line 6 and uncomment line 7
+
+- ```sudo systemctl restart tomcat```
 ### Installing Blazegraph Namespaces and Inference:
 - ```sudo curl -X POST -H "Content-Type: text/plain" --data-binary @/opt/blazegraph/conf/blazegraph.properties http://localhost:8080/blazegraph/namespace```
 
@@ -626,25 +630,25 @@ Folowing command will move Crayfish Microservices Config files and Apache Config
 >#Homarus Configs
 >#sudo rm -r /opt/crayfish/Homarus/cfg
 >sudo mkdir /opt/crayfish/Homarus/cfg
->sudo cp /mnt/hgfs/shared/Crayfish-confs/homarus.config.yaml /opt/crayfish/Homarus/cfg/config.yaml
+>sudo cp /mnt/hgfs/shared/homarus.config.yaml /opt/crayfish/Homarus/cfg/config.yaml
 >
 >#houdini Configs
->sudo cp /mnt/hgfs/shared/Crayfish-confs/houdini.services.yaml /opt/crayfish/Houdini/config/services.yaml
->sudo cp /mnt/hgfs/shared/Crayfish-confs/crayfish_commons.yml /opt/crayfish/Houdini/config/packages/crayfish_commons.yml
->sudo cp /mnt/hgfs/shared/Crayfish-confs/monolog.yml /opt/crayfish/Houdini/config/packages/monolog.yml
->sudo cp /mnt/hgfs/shared/Crayfish-confs/security.yml /opt/crayfish/Houdini/config/packages/security.yml
+>sudo cp /mnt/hgfs/shared/houdini.services.yaml /opt/crayfish/Houdini/config/services.yaml
+>sudo cp /mnt/hgfs/shared/crayfish_commons.yml /opt/crayfish/Houdini/config/packages/crayfish_commons.yml
+>sudo cp /mnt/hgfs/shared/monolog.yml /opt/crayfish/Houdini/config/packages/monolog.yml
+>sudo cp /mnt/hgfs/shared/security.yml /opt/crayfish/Houdini/config/packages/security.yml
 >#Hypercube Configs
 >
 >sudo mkdir /opt/crayfish/Hypercube/cfg
->sudo cp /mnt/hgfs/shared/Crayfish-confs/hypercube.config.yaml /opt/crayfish/Hypercube/cfg/config.yaml
+>sudo cp /mnt/hgfs/shared/hypercube.config.yaml /opt/crayfish/Hypercube/cfg/config.yaml
 >
 >#Milliner Configs
 >sudo mkdir /opt/crayfish/Milliner/cfg/
->sudo cp /mnt/hgfs/shared/Crayfish-confs/milliner.config.yaml /opt/crayfish/Milliner/cfg/config.yaml
+>sudo cp /mnt/hgfs/shared/milliner.config.yaml /opt/crayfish/Milliner/cfg/config.yaml
 >
 >#Recast Configs
 >sudo mkdir /opt/crayfish/Recast/cfg
->sudo cp /mnt/hgfs/shared/Crayfish-confs/recast.config.yaml /opt/crayfish/Recast/cfg/config.yaml
+>sudo cp /mnt/hgfs/shared/recast.config.yaml /opt/crayfish/Recast/cfg/config.yaml
 >
 >#Permissions
 >sudo chown www-data:www-data /opt/crayfish/Homarus/cfg/config.yaml
@@ -724,9 +728,16 @@ ActiveMQ expected to be listening for STOMP messages at a tcp url. If not the de
 karaf is not been used to install latest Alpaca Microservices any more, We will install alpaca Microservices in a another way later
 
 # 3. Alpaca:
-Check Alpaca installation in offial Islandora Github:
+- Make a directory for Alpaca and download the latest version of Alpaca from the Maven repository. E.g.
+>``
+>mkdir /opt/alpaca
+>cd /opt/alpaca
+>curl -L https://repo1.maven.org/maven2/ca/islandora/alpaca/islandora-alpaca-app/2.2.0
+>``
+- ```java -jar /opt/alpaca/alpaca.jar```
 
-- (https://islandora.github.io/documentation/installation/manual/installing-alpaca/)
+- Look at the [example.properties](https://github.com/Islandora/Alpaca/blob/2.x/example.properties) file to see some example settings.
+
 
 # Download and Scaffold Drupal, Create a project using the Islandora Starter Site:
 #### install php-intl 8.3:
@@ -923,12 +934,13 @@ run the migration tagged with islandora  to populate some taxonomies.
 
 #### Groups role and group role permissions:
 - **Create specific roles:**
-  - For administratiopn access create Admin, Admin Outside, and Admin Inside. Ensure each role has the appropriate admin permissions.
+  - Navigate to Groups>Grope Type> edit group role of created Group Type > 
+  - For administratiopn access we create roles for admin, and ensure each role has the appropriate admin permissions:
+    -  Admin individual with administration roles
+    -  Admin Outsider
+    -  Admin Insider
 
   - You can also create different roles for members, content creators, or other specific roles, and assign these roles to specific users.
-
-- **Edit Group Type:**
-  - Go back to your Group type, and assign the individual admin role you created to that group type.
 
 - **Assign role to the user**:
   - In Drupal, navigate to Admin > People to manage user roles:
@@ -937,28 +949,40 @@ run the migration tagged with islandora  to populate some taxonomies.
 
     - You can also assign users as content creators for specific group types. This way, they will only have access to the group types and groups they are assigned to, and will not have access to other group types or groups within those types.
 
-#### Set islandora access in access controllL 
-- Navigate to ```configuration -> access controll -> islandora access and select islandora_access```
+#### Assign islandora access To the group type we created:
+- Navigate to ```configuration -> access controll -> select islandora_access for <GroupTypeName>```
 
-#### Create islandora access field for islandora Content type:
-- Navigate to ```structure -> content types -> repository item -> manage fields -> create a access terms -> type is Reference -> Reference type: Taxonomy term, Vocabulary: Islandora Access```
+#### Create Group:
+- Mavigate to Groups> Create Groups
 
-#### Create islandora access field for each Media types :
-- Navigate to ```structure -> mediatypes -> edit one of the media types -> edit -> manage fields -> create a field -> create a access terms -> type is Reference -> Reference type = Islandora Access```
+#### Create field access terms for Repository Item Content type:
+- Navigate to ```structure -> content types -> repository item -> manage fields -> create a access terms (name = access_terms) -> type is Reference -> Reference type: Taxonomy term, Vocabulary: Islandora Access```
 
-- For each media type, we need to have field access terms. We can reuse the access terms we have already created.
+#### Create field access terms for each Media types :
+- Navigate to ```structure -> mediatypes -> edit one of the media types -> edit -> manage fields -> create a field -> create a access terms field (name = access_terms) -> type is Reference -> Reference type = Islandora Access```
+  - Example: We craete field access terms for audio and machine name in list of fields is field_access_terms
+
+- For each media type, we need to have field access terms. After creating field_access_terms for one media type (ex: audio) this can be re-used for other media types.
+  - Example: After creating field_access_terms for one of the 
 
 #### Select islandora access for each nodes and media:
 - Navigate to ```configuration -> access controll -> islandora access```
 
 - Select islandora_access for the repository items content type and all media types.
+- Select islandora_access for the each media types.
 
+#### set available content in group type:
+- navigate to groups>group type> set avaialble content
+- install each content one by one
 
 #### Fix the destination for each media type (Important for media ingestion for each media types):
 - Navigate ```Structure>Media types```
  
 - For each media type, edit the field where the type is file and set the Upload destination to Public files (for fedora-less system)
    - Example: for audio: field_media_audio_file
+   - Image media type's field type is **Image** not **file**
+
+
 
 #### Ensure you have set maxiumum file size
 - **upload size and max post size:**
@@ -968,9 +992,9 @@ run the migration tagged with islandora  to populate some taxonomies.
   - ```change max_file_uploads = 200 to an appropriate number (1000?)```
 
 #### restart apache and tomcat, daemon-reload, cache rebuild
-    - ```sudo systemctl restart apache2 tomcat```
-    - ```sudo systemctl daemon-reload```
-    - ```drush cr```
+- ```sudo systemctl restart apache2 tomcat```
+- ```sudo systemctl daemon-reload```
+- ```drush cr```
 
 # re-islandora Workbench to be on V1.0.0:
 #### Remove dev version and install V1 cause dev version is not determined by workbench anymore:
@@ -1027,7 +1051,10 @@ Because we have custom fields that are not part of the default Drupal fields in 
 
   - **Create fields:**
      - Navigate to configurations>delvelopment>add fields programmatically> under Content dropdown> copy json configuration for creating fields> Click save Configuration
-     - Then select node from dropdown > Click Create fields now
+     - Then under Action tab select node from dropdown > Click Create fields now
+       - if json configurations where correct it will show you message that says: **Processed fields for node.**
+
+
      - Json format for creating fields with different data types:
   - **Example JSON syntax for creating fields:**
 ```json
@@ -1048,3 +1075,26 @@ Because we have custom fields that are not part of the default Drupal fields in 
 ### 2. now run the workbench to ingest our content to the server:
    - ```cd islandora_workbench```
    - ```./workbench --config LDLingest.yml```
+
+### 3. Workbench issues:
+- **If Workbench did not ingest media to groups:**
+  - add following Python libraries:
+>```
+>import requests_cache
+>from rich.traceback import install
+>import urllib3
+>urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+>```
+
+  - edit the workbench_utils.py, search for field_media_use and add the following to the end of if statement "if media_type in 	get_oembed_media_types(config):" and "else"
+>```
+>                }],
+>                "field_access_terms": [{
+>                    "target_id": csv_row['field_access_terms'],
+>                    "target_type": 'taxonomy_term'
+>                }]
+>```
+
+- **If media not ingested:**
+  - set the default flysystem for each media type to your default flysystem
+  - check if you have all the fields in ingest csv in drupal default fields
