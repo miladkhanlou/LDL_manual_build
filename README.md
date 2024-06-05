@@ -725,18 +725,140 @@ ActiveMQ expected to be listening for STOMP messages at a tcp url. If not the de
 - ```name="stomp" uri="stomp://127.0.0.1:61613"```
 
 # 2. Karaf 
-karaf is not been used to install latest Alpaca Microservices any more, We will install alpaca Microservices in a another way later
+We are geting passed karaf and terminated karaf from our old documentation. Karaf is not been used to install latest Alpaca Microservices any more, We will install alpaca with a jar file in the next step.
 
 # 3. Alpaca:
+### Alpaca importance in islandora ecosystem:
+- Alpaca integrates and manages various microservices in an Islandora installation, handling content indexing, derivative generation, message routing from Drupal, service integration with repositories and endpoints, and configuration management for seamless system functionality.
+
+- In more detail, Alpaca will connect to the ActiveMQ broker, handle HTTP requests, index content in Fedora and Triplestore, and generate derivatives using FITS, Homarus, Houdini, and OCR services based on the queues and URLs specified in the configuration file.
+
+### download alpaca.jar:
 - Make a directory for Alpaca and download the latest version of Alpaca from the Maven repository. E.g.
->``
+>```
 >mkdir /opt/alpaca
 >cd /opt/alpaca
->curl -L https://repo1.maven.org/maven2/ca/islandora/alpaca/islandora-alpaca-app/2.2.0
->``
-- ```java -jar /opt/alpaca/alpaca.jar```
+>curl -L https://repo1.maven.org/maven2/ca/islandora/alpaca/islandora-alpaca-app/2.2.0/islandora-alpaca-app-2.2.0-all.jar -o alpaca.jar
+>cp /mnt/hgfs/shared/alpaca.properties /opt/alpaca/
+>```
+
+### Copy alpaca.properties:
+- Next, we need to copy over the configuration file containing the necessary flags so Alpaca knows how to connect to all required services. This configuration file is named alpaca.properties and should be executed using the following command:
 
 - Look at the [example.properties](https://github.com/Islandora/Alpaca/blob/2.x/example.properties) file to see some example settings.
+
+- Here is the alpaca.properties configuration file:
+>```
+># Common options
+>error.maxRedeliveries=5
+>jms.brokerUrl=tcp://localhost:61616
+>jms.username=
+>jms.password=
+>jms.connections=10
+>
+># Custom Http client options
+># All timeouts in milliseconds
+>request.configurer.enabled=false
+>request.timeout=-1
+>connection.timeout=-1
+>socket.timeout=-1
+>
+># Additional HTTP endpoint options, these can be for Camel or to be sent to the baseUrl or service.url
+>http.additional_options=
+>
+># Fedora indexer options
+>fcrepo.indexer.enabled=true
+>fcrepo.indexer.node=queue:islandora-indexing-fcrepo-content
+>fcrepo.indexer.delete=queue:islandora-indexing-fcrepo-delete
+>fcrepo.indexer.media=queue:islandora-indexing-fcrepo-media
+>fcrepo.indexer.external=queue:islandora-indexing-fcrepo-file-external
+>fcrepo.indexer.milliner.baseUrl=http://127.0.0.1:8000/milliner/
+>fcrepo.indexer.concurrent-consumers=-1
+>fcrepo.indexer.max-concurrent-consumers=-1
+>fcrepo.indexer.async-consumer=false
+>
+># Triplestore indexer options
+>triplestore.indexer.enabled=true
+>triplestore.baseUrl=http://127.0.0.1:8080/bigdata/namespace/kb/sparql
+>triplestore.index.stream=queue:islandora-indexing-triplestore-index
+>triplestore.delete.stream=queue:islandora-indexing-triplestore-delete
+>triplestore.indexer.concurrent-consumers=-1
+>triplestore.indexer.max-concurrent-consumers=-1
+>triplestore.indexer.async-consumer=false
+>
+># Derivative services
+>derivative.systems.installed=fits,homarus,houdini,ocr
+>
+>derivative.fits.enabled=true
+>derivative.fits.in.stream=queue:islandora-connector-fits
+>derivative.fits.service.url=http://localhost:8000/crayfits
+>derivative.fits.concurrent-consumers=-1
+>derivative.fits.max-concurrent-consumers=-1
+>derivative.fits.async-consumer=false
+>
+>derivative.homarus.enabled=true
+>derivative.homarus.in.stream=queue:islandora-connector-homarus
+>derivative.homarus.service.url=http://127.0.0.1:8000/homarus/convert
+>derivative.homarus.concurrent-consumers=-1
+>derivative.homarus.max-concurrent-consumers=-1
+>derivative.homarus.async-consumer=false
+>
+>derivative.houdini.enabled=true
+>derivative.houdini.in.stream=queue:islandora-connector-houdini
+>derivative.houdini.service.url=http://127.0.0.1:8000/houdini/convert
+>derivative.houdini.concurrent-consumers=-1
+>derivative.houdini.max-concurrent-consumers=-1
+>derivative.houdini.async-consumer=false
+>
+>derivative.ocr.enabled=true
+>derivative.ocr.in.stream=queue:islandora-connector-ocr
+>derivative.ocr.service.url=http://localhost:8000/hypercube
+>derivative.ocr.concurrent-consumers=-1
+>derivative.ocr.max-concurrent-consumers=-1
+>derivative.ocr.async-consumer=false
+>```
+
+
+### Run Alpaca using configurations: 
+- ```java -jar alpaca.jar -c /opt/alpaca/alpaca.properties```
+
+
+### Alpaca will perform the following tasks:
+- **Connect to ActiveMQ:**
+
+   - Broker URL: tcp://localhost:61616
+   - Maximum Redeliveries: 5
+   - Number of connections: 10
+
+- **Handle HTTP Requests:**
+   - Custom HTTP client options with specific timeouts (all set to -1, meaning no timeout).
+
+- **Fedora Indexing:**
+   - Enable Fedora indexer.
+   - Connect to queues for content, delete, media, and external file indexing.
+   - Base URL for the Milliner service: http://127.0.0.1:8000/milliner/
+
+- **Triplestore Indexing:**
+   - Enable Triplestore indexer.
+   - Base URL for Triplestore: http://127.0.0.1:8080/bigdata/namespace/kb/sparql
+   - Connect to queues for indexing and deleting data.
+
+- **Generate Derivatives:**
+   - Enable and configure FITS, Homarus, Houdini, and OCR services for generating derivatives.
+   - Each service connects to its respective queue and service URL.
+   - Example: FITS service URL is http://localhost:8000/crayfits
+
+- **Concurrent Consumers:**
+   - Configure concurrent consumer settings for various indexers and derivative services (all set to -1, meaning default values will be used).
+
+
+### Extra notes:
+- **Configuration:**
+  - If we are installing everything on the same server, the provided example properties should be fine as-is. Simply rename the file to alpaca.properties and run the command mentioned above.
+
+  - If Alpaca is running on a different machine, we will just need to update the URLs in the configuration file to point to the correct host for the various services.
+
+- **Alpaca Activity:** We won't see much activity from Alpaca until our ActiveMQ is populated with messages from Drupal, such as requests to index content or generate derivatives.
 
 
 # Download and Scaffold Drupal, Create a project using the Islandora Starter Site:
@@ -1075,26 +1197,3 @@ Because we have custom fields that are not part of the default Drupal fields in 
 ### 2. now run the workbench to ingest our content to the server:
    - ```cd islandora_workbench```
    - ```./workbench --config LDLingest.yml```
-
-### 3. Workbench issues:
-- **If Workbench did not ingest media to groups:**
-  - add following Python libraries:
->```
->import requests_cache
->from rich.traceback import install
->import urllib3
->urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
->```
-
-  - edit the workbench_utils.py, search for field_media_use and add the following to the end of if statement "if media_type in 	get_oembed_media_types(config):" and "else"
->```
->                }],
->                "field_access_terms": [{
->                    "target_id": csv_row['field_access_terms'],
->                    "target_type": 'taxonomy_term'
->                }]
->```
-
-- **If media not ingested:**
-  - set the default flysystem for each media type to your default flysystem
-  - check if you have all the fields in ingest csv in drupal default fields
