@@ -48,7 +48,6 @@ Move the data, tmp, and conf directories to a different location if needed.
 
 #### Start the ActiveMQ Service:
 ```sudo service activemq start```
------------------------------
 
 ### 2) if not worked with current init configureation:(active(exited))
 ##### Global Default Configuration:
