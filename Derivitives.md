@@ -1,31 +1,30 @@
 # 1. Derivatives and Fedora in LDL:
 ## What are derivitives:
-    - Derivatives are files that are derived from original ones, such as medium and small-sized versions of objects in JP2 format.
+- Derivatives are files that are derived from original ones, such as medium and small-sized versions of objects in JP2 format.
     
-    - Derivatives are used for various purposes, like creating thumbnails.
+- Derivatives are used for various purposes, like creating thumbnails.
     
-    - Instead of Drupal, Fedora is responsible for applying derivatives.
-
+- Instead of Drupal, Fedora is responsible for applying derivatives.
 
 ## What they do in LDL1:
-    - On LDL1, derivatives are responsible for creating and managing different datastreams through a graphical user interface (GUI).
+- On LDL1, derivatives are responsible for creating and managing different datastreams through a graphical user interface (GUI).
     
-    - Files are managed by Fedora's RELS-EXT (Resource Description Framework in Fedora) which defines relationships between objects.
+- Files are managed by Fedora's RELS-EXT (Resource Description Framework in Fedora) which defines relationships between objects.
     
-    - Datastreams are created as data is ingested into the system.
+- Datastreams are created as data is ingested into the system.
     
-    - Fedora/RiSearch is used for resource indexing.
+- Fedora/RiSearch is used for resource indexing.
     
-    - Fedora creates derivatives from original files and saves them according to configured workflows.
+- Fedora creates derivatives from original files and saves them according to configured workflows.
     
-    - Islandora Tuque creates connections from Drupal to Islandora.
+- Islandora Tuque creates connections from Drupal to Islandora.
 
 
 # 2. FEDORA AS A OBJECT MANAGER:
 ## FEDORA STORAGE USAGE IN LDL1:
-    - deriviteves are being created and pushed pout to fedora storage location endpoint.
+- deriviteves are being created and pushed pout to fedora storage location endpoint.
 
-    -  we may need to configure drupal storage location where derivitives get saved on Database.
+-  we may need to configure drupal storage location where derivitives get saved on Database.
 ## Fedora Components and micro services:
 ### 1. Blazegraph relational database for relations:
 - **1. Role:**
