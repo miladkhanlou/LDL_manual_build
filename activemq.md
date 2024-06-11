@@ -43,10 +43,10 @@ Move the data, tmp, and conf directories to a different location if needed.
 #### Install Init Script:
 ```sudo ln -snf /srv/activemq/current/bin/activemq /etc/init.d/activemq```
 
-#Activate Init Script at System Startup:
+#### Activate Init Script at System Startup:
 ```sudo update-rc.d activemq defaults```
 
-#Start the ActiveMQ Service:
+#### Start the ActiveMQ Service:
 ```sudo service activemq start```
 -----------------------------
 
