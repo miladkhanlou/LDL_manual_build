@@ -20,6 +20,8 @@
 - Islandora Tuque creates connections from Drupal to Islandora.
 
 
+
+
 # 2. FEDORA AS A OBJECT MANAGER:
 ## FEDORA STORAGE USAGE IN LDL1:
 - deriviteves are being created and pushed pout to fedora storage location endpoint.
